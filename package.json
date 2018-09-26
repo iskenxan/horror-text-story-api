@@ -1,0 +1,12 @@
+{
+  "name": "travel-guide-api",
+  "version": "1.0.0",
+  "description": "Travel guide app back end API",
+  "main": "app.js",
+  "author": "Iskander Samatov",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
