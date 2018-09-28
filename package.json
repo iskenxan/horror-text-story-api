@@ -6,8 +6,12 @@
   "author": "Iskander Samatov",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "start": "node server/app.js"
+  },
   "dependencies": {
-    "express": "^4.16.3"
+    "express": "^4.16.3",
+    "firebase-admin": "^6.0.0"
   },
   "devDependencies": {
     "eslint": "^5.6.0",
