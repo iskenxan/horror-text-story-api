@@ -1,14 +1,16 @@
-const admin = require('firebase-admin');
+'use strict';
 
-const serviceAccount = require('../firebase-admin-sdk');
+var admin = require('firebase-admin');
 
-const getDbInstance = () => {
+var serviceAccount = require('../firebase-admin-sdk');
+
+var getDbInstance = function getDbInstance() {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://travelguide-bf6df.firebaseio.com',
+    databaseURL: 'https://travelguide-bf6df.firebaseio.com'
   });
 
-  const db = admin.firestore();
+  var db = admin.firestore();
   db.settings({ timestampsInSnapshots: true });
 
   return db;
@@ -23,3 +25,4 @@ const getDbInstance = () => {
 // });
 
 module.exports = { db: getDbInstance() };
+//# sourceMappingURL=index.js.map
