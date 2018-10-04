@@ -6,6 +6,9 @@
   "author": "Iskander Samatov",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": "10.4.1"
+  },
   "scripts": {
     "start-dev": "node bin/dev",
     "start": "node dist/app.js",
