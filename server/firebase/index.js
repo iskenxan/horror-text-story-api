@@ -1,6 +1,5 @@
-const admin = require('firebase-admin');
-
-const serviceAccount = require('../firebase-admin-sdk');
+import * as admin from 'firebase-admin';
+import serviceAccount from '../firebase-admin-sdk';
 
 const getDbInstance = () => {
   admin.initializeApp({
@@ -14,12 +13,5 @@ const getDbInstance = () => {
   return db;
 };
 
-// const docRef = db.collection('users').doc('alovelace');
-//
-// const setAda = docRef.set({
-//   first: 'Ada',
-//   last: 'Lovelace',
-//   born: 1815,
-// });
 
 module.exports = { db: getDbInstance() };

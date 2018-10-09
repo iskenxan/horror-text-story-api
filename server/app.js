@@ -1,6 +1,6 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const userRoute = require('./rest-handlers/user');
+import express from 'express';
+import bodyParser from 'body-parser';
+import userRoute from './rest-handlers/user';
 
 
 const app = express();
@@ -16,6 +16,15 @@ app.use((req, res, next) => {
 
 app.use('/user', userRoute);
 
+const resultHandling = (req, res, next) => {
+  if (res.locals.result) {
+    res.status(200).send({ ok: true, result: res.locals.result });
+  }
+  next();
+};
+
+app.use(resultHandling);
+
 
 // eslint-disable-next-line no-unused-vars
 const errorHandling = (err, req, res, next) => {
@@ -26,6 +35,7 @@ const errorHandling = (err, req, res, next) => {
     stackTrace = err.stack;
   }
   res.status(status).send({
+    ok: false,
     error: {
       status,
       message,

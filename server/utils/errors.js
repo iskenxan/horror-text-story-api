@@ -16,7 +16,7 @@ class AuthenticationError extends Error {
 }
 
 
-class InvalidArguementError extends Error {
+class InvalidArgumentError extends Error {
   constructor(message, status) {
     super();
     this.message = message || 'Invalid arguments';
@@ -28,5 +28,5 @@ class InvalidArguementError extends Error {
 module.exports = {
   ResourceNotFound,
   AuthenticationError,
-  InvalidArguementError,
+  InvalidArgumentError,
 };
