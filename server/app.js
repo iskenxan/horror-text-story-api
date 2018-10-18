@@ -1,7 +1,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import _ from 'lodash';
 import userRoute from './rest-handlers/user';
+import User from './firebase/user';
+import { ResourceNotFound, InvalidArgumentError } from './utils/errors';
 
+const NON_SECURE_PATHS = ['/user/login', '/user/signup', '/user/logout'];
 
 const app = express();
 app.use(bodyParser.json());
@@ -14,7 +18,33 @@ app.use((req, res, next) => {
 });
 
 
+const verifyTokenAndGetUser = (token, next) => {
+  return new Promise((resolve) => {
+    if (token) {
+      return User.findByToken(token).then((doc) => {
+        if (doc.exists) {
+          const user = doc.data();
+          return resolve(user);
+        }
+        return next(new ResourceNotFound('User not found'));
+      }).catch(error => next(error));
+    }
+    return next(new InvalidArgumentError('No token was passed'));
+  });
+};
+
+
+app.post('*', (req, res, next) => {
+  const { token } = req.body;
+  if (_.includes(NON_SECURE_PATHS, req.path)) return next();
+
+  return verifyTokenAndGetUser(token, next).then((user) => {
+    res.locals.user = user;
+    next();
+  });
+});
 app.use('/user', userRoute);
+
 
 const resultHandling = (req, res, next) => {
   if (res.locals.result) {

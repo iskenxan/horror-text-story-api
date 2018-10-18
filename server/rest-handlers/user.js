@@ -23,20 +23,32 @@ const checkPassword = (password, user) => {
 };
 
 
+router.post('/posts/draft/save', (req, res, next) => {
+  const { draft } = req.body;
+  const { user } = res.locals;
+  User.saveDraft(user.username, draft).then((id) => {
+    res.locals.result = id;
+    next();
+  }).catch(error => next(error));
+});
+
+
+router.post('/posts/draft/get', (req, res, next) => {
+  const { id } = req.body;
+  const { user } = res.locals;
+  User.getDraft(user.username, id).then((doc) => {
+    if (doc.exists) {
+      res.locals.result = doc.data();
+      next();
+    }
+  }).catch(error => next(error));
+});
+
+
 router.post('/me', (req, res, next) => {
-  const { token } = req.body;
-  if (token) {
-    User.findByToken(token).then((user) => {
-      if (user) {
-        res.locals.result = { ...user, hashedPassword: undefined, tokens: undefined };
-        next();
-      } else {
-        throw new ResourceNotFound('User not found');
-      }
-    }).catch(error => next(error));
-  } else {
-    throw new InvalidArgumentError('No token was passed');
-  }
+  const { user } = res.locals;
+  res.locals.result = { ...user, hashedPassword: undefined, tokens: undefined };
+  next();
 });
 
 
@@ -44,8 +56,9 @@ router.post('/login', (req, res, next) => {
   let token = null;
   const { username, password } = req.body;
   let resultUser = null;
-  User.findUserByUsername(username).then((user) => {
-    if (user) {
+  User.findUserByUsername(username).then((doc) => {
+    if (doc.exists) {
+      const user = doc.data();
       resultUser = { ...user, hashedPassword: undefined, tokens: undefined };
       return checkPassword(password, user);
     }
@@ -67,23 +80,16 @@ router.post('/signup', (req, res, next) => {
     throw new InvalidArgumentError('Passwords don\'t match');
   }
   const token = generateToken(username);
-  User.findUserByUsername(username).then((user) => {
-    if (!user) {
-      const newUser = new User(username, password, token);
-      newUser.writeToDb();
-      return { ...newUser, hashedPassword: undefined, tokens: undefined };
-    }
-    return Promise.reject(new InvalidArgumentError('User with the given username already exists'));
-  }).then((user) => {
-    res.locals.result = { user, token };
-    next();
-  }).catch(error => next(error));
+  const newUser = new User(username, password, token);
+  newUser.writeToDb();
+  res.locals.result = { user: { ...newUser, hashedPassword: undefined, tokens: undefined }, token };
+  next();
 });
 
 
 router.post('/logout', (req, res, next) => {
-  const { username, token } = req.body;
-  User.deleteToken(username, token).then(() => {
+  const { token } = req.body;
+  User.deleteToken(token).then(() => {
     res.status(200).end();
     next();
   })

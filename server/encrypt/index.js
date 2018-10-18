@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { AuthenticationError } from '../utils/errors';
 
 const TOKEN_SALT = 'Gn@L=Uys>_v(z}Nu"~~kVUCg^B\\T<A[eGhTp&v8@';
 
@@ -16,4 +17,16 @@ const generateToken = (username) => {
 };
 
 
-module.exports = { generateHashedPassword, generateToken };
+const verifyToken = (token) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const decoded = jwt.verify(token, TOKEN_SALT);
+      resolve(decoded.username);
+    } catch (e) {
+      reject(new AuthenticationError('Invalid security token'));
+    }
+  });
+};
+
+
+module.exports = { generateHashedPassword, generateToken, verifyToken };
