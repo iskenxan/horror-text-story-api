@@ -1,12 +1,19 @@
 import * as admin from 'firebase-admin';
 import serviceAccount from '../firebase-admin-sdk';
 
-const getDbInstance = () => {
+
+const initializeFirebaseConnection = () => {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://travelguide-bf6df.firebaseio.com',
+    storageBucket: 'profile-pictures.appspot.com',
   });
+};
 
+initializeFirebaseConnection();
+
+
+const getDbInstance = () => {
   const db = admin.firestore();
   db.settings({ timestampsInSnapshots: true });
 
@@ -14,4 +21,6 @@ const getDbInstance = () => {
 };
 
 
-module.exports = { db: getDbInstance() };
+const getBucketInstance = () => admin.storage().bucket();
+
+module.exports = { db: getDbInstance(), bucket: getBucketInstance(), initializeFirebaseConnection };

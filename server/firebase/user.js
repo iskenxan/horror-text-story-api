@@ -2,7 +2,7 @@
 import adminFirestore from 'firebase-admin';
 import { db } from './index';
 import { generateHashedPassword, verifyToken } from '../encrypt';
-import { InvalidArgumentError } from '../utils/errors';
+import { InvalidArgumentError, ResourceNotFound } from '../utils/errors';
 
 class User {
   constructor(username, password) {
@@ -35,6 +35,39 @@ class User {
   static findUserByUsername(username) {
     return db.collection('users').doc(username).get();
   }
+
+
+  static unpublish = (username, postId) => {
+    if (!username || !postId || username === '' || postId === '') {
+      throw new InvalidArgumentError('Username and post id cannot be empty');
+    }
+    let post = null;
+    return User.getPublished(username, postId)
+      .then((doc) => {
+        if (!doc.exists) {
+          throw new ResourceNotFound('Post was not found');
+        }
+        post = doc.data();
+        return db.collection('users').doc(username).collection('drafts').doc(postId)
+          .set({ ...post });
+      })
+      .then(() => {
+        return User._saveDraftRef(username, { ...post, id: postId });
+      })
+      .then(() => {
+        return User.deletePost(postId, username);
+      })
+      .then(() => postId);
+  };
+
+
+  static getPublished = (username, postId) => {
+    if (!username || !postId || username === '' || postId === '') {
+      throw new InvalidArgumentError('Username and draft id cannot be empty');
+    }
+    return db.collection('users').doc(username).collection('published').doc(postId)
+      .get();
+  };
 
 
   static savePublished = (post, username) => {
@@ -90,6 +123,17 @@ class User {
   };
 
 
+  static deletePost = (postId, username) => {
+    return db.collection('users').doc(username).collection('published').doc(postId)
+      .delete()
+      .then(() => {
+        return db.collection('users').doc(username).update({
+          [`publishedRefs.${postId}`]: adminFirestore.firestore.FieldValue.delete(),
+        });
+      });
+  };
+
+
   static deleteDraft = (draftId, username) => {
     return db.collection('users').doc(username).collection('drafts').doc(draftId)
       .delete()
@@ -129,7 +173,12 @@ class User {
         title: draft.title,
       },
     });
-  }
+  };
+
+
+  static saveProfileImage = (redusedImage, username) => {
+
+  };
 }
 
 module.exports = User;

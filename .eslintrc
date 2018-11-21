@@ -3,6 +3,8 @@
   "parser": "babel-eslint",
   "rules": {
     "arrow-body-style":"off",
-    "no-underscore-dangle": "off"
+    "no-underscore-dangle": "off",
+    "array-callback-return": "off",
+    "consistent-return": "off"
   }
 }

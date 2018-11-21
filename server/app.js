@@ -1,12 +1,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import _ from 'lodash';
-import userRoute from './rest-handlers/user';
+import user from './rest-handlers/user';
 import { verifyToken } from './encrypt';
 
-import { InvalidArgumentError } from './utils/errors';
+import { AuthenticationError } from './utils/errors';
 
-const NON_SECURE_PATHS = ['/user/login', '/user/signup', '/user/logout'];
+const NON_SECURE_PATHS = ['/user/auth'];
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,7 +20,12 @@ app.use((req, res, next) => {
 
 app.post('*', (req, res, next) => {
   const { token } = req.body;
-  if (_.includes(NON_SECURE_PATHS, req.path)) return next();
+  let notSecure = false;
+  NON_SECURE_PATHS.filter((path) => {
+    if (req.path.includes(path)) notSecure = true;
+  });
+
+  if (notSecure) return next();
 
   if (token) {
     return verifyToken(token).then((username) => {
@@ -30,10 +34,9 @@ app.post('*', (req, res, next) => {
     })
       .catch(error => next(error));
   }
-  return next(new InvalidArgumentError('No token was passed'));
+  return next(new AuthenticationError('No token was passed'));
 });
-
-app.use('/user', userRoute);
+app.use('/user', user);
 
 
 const resultHandling = (req, res, next) => {
