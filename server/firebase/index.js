@@ -6,7 +6,7 @@ const initializeFirebaseConnection = () => {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://travelguide-bf6df.firebaseio.com',
-    storageBucket: 'profile-pictures.appspot.com',
+    storageBucket: 'travelguide-bf6df.appspot.com',
   });
 };
 
@@ -23,4 +23,4 @@ const getDbInstance = () => {
 
 const getBucketInstance = () => admin.storage().bucket();
 
-module.exports = { db: getDbInstance(), bucket: getBucketInstance(), initializeFirebaseConnection };
+module.exports = { db: getDbInstance(), bucket: getBucketInstance() };

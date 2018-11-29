@@ -5,7 +5,7 @@ import { verifyToken } from './encrypt';
 
 import { AuthenticationError } from './utils/errors';
 
-const NON_SECURE_PATHS = ['/user/auth'];
+const NON_SECURE_PATHS = ['/user/auth', '/user/profile/profile-image/save'];
 
 const app = express();
 app.use(bodyParser.json());
@@ -34,7 +34,7 @@ app.post('*', (req, res, next) => {
     })
       .catch(error => next(error));
   }
-  return next(new AuthenticationError('No token was passed'));
+  return next(new AuthenticationError('No security token was passed'));
 });
 app.use('/user', user);
 

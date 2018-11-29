@@ -17,7 +17,7 @@ const checkPassword = (password, user) => {
     if (passwordsMatch) {
       resolve();
     }
-    reject(new AuthenticationError());
+    reject(new AuthenticationError('Incorrect password'));
   });
 };
 
@@ -49,18 +49,23 @@ router.post('/login', (req, res, next) => {
 
 router.post('/signup', (req, res, next) => {
   const { username, password, repeatPassword } = req.body;
-  if (username && password && repeatPassword) {
-    if (password !== repeatPassword) {
-      throw new InvalidArgumentError('Passwords don\'t match');
-    }
-    const token = generateToken(username);
-    const newUser = new User(username, password, token);
-    newUser.writeToDb();
-    res.locals.result = { user: { ...newUser, hashedPassword: undefined }, token };
-    next();
-  } else {
-    next(new InvalidArgumentError('username, password and repeat password cannot be empty'));
+  if (!username || !password || !repeatPassword) {
+    throw new InvalidArgumentError('username, password and repeat password cannot be empty');
   }
+  if (password !== repeatPassword) {
+    throw new InvalidArgumentError('Passwords don\'t match');
+  }
+  User.findUserByUsername(username).then((doc) => {
+    if (doc.exists) {
+      throw new InvalidArgumentError('Username is taken');
+    } else {
+      const token = generateToken(username);
+      const newUser = new User(username, password, token);
+      newUser.writeToDb();
+      res.locals.result = { user: { ...newUser, hashedPassword: undefined }, token };
+      next();
+    }
+  }).catch(error => next(error));
 });
 
 

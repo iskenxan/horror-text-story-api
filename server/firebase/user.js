@@ -23,6 +23,7 @@ class User {
       return db.collection('users').doc(this.username).set({
         username: this.username,
         hashedPassword: this.hashedPassword,
+        profileUrl: null,
         publishedRefs: this.publishedRefs,
         draftRefs: this.draftRefs,
         followers: this.followers,
@@ -176,8 +177,10 @@ class User {
   };
 
 
-  static saveProfileImage = (redusedImage, username) => {
-
+  static saveProfileImageUrl = (imageUrl, username) => {
+    return db.collection('users').doc(username).update({
+      profileUrl: imageUrl,
+    });
   };
 }
 
