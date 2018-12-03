@@ -20,7 +20,7 @@ router.post('/me', (req, res, next) => {
     User.findUserByUsername(username).then((doc) => {
       if (doc.exists) {
         res.locals.result = { ...doc.data(), hashedPassword: undefined };
-        next();
+        return next();
       }
       next(new ResourceNotFound('User not found'));
     });
@@ -57,7 +57,7 @@ const verifyTokenAndSave = (res, next, fileData, token) => {
       return compressAndSaveImage(fileData, username);
     })
     .then((profileUrl) => {
-      res.locals.result = { url: profileUrl };
+      res.locals.result = profileUrl;
       next();
     })
     .catch(error => next(error));
@@ -69,11 +69,11 @@ router.post('/profile-image/save', busboyMiddleWare(), (req, res, next) => {
   let fileData = null;
   let token = null;
   req.busboy.on('file', (fieldName, file) => {
-    let firstCall = true;
     file.on('data', (data) => {
-      if (firstCall) {
+      if (fileData === null) {
         fileData = data;
-        firstCall = false; // on file can have mutliple `data` calls, we only care about first one
+      } else {
+        fileData = Buffer.concat([fileData, data]);
       }
     });
   });
