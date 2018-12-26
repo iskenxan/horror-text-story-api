@@ -43,22 +43,25 @@ class User {
       throw new InvalidArgumentError('Username and post id cannot be empty');
     }
     let post = null;
+    const lastUpdated = new Date().getTime();
     return User.getPublished(username, postId)
       .then((doc) => {
         if (!doc.exists) {
           throw new ResourceNotFound('Post was not found');
         }
         post = doc.data();
+        post.lastUpdated = lastUpdated;
         return db.collection('users').doc(username).collection('drafts').doc(postId)
           .set({ ...post });
       })
       .then(() => {
-        return User._saveDraftRef(username, { ...post, id: postId });
+        post.id = postId;
+        return User._saveDraftRef(username, { ...post }, lastUpdated);
       })
       .then(() => {
         return User.deletePost(postId, username);
       })
-      .then(() => postId);
+      .then(() => post);
   };
 
 
@@ -78,18 +81,24 @@ class User {
     if (post.dialogCount <= 2) {
       throw new InvalidArgumentError('Post must have at least 3 dialog messages');
     }
-    let id = null;
-    return User._saveInCollection(username, post, 'published').then((snapshot) => {
-      id = snapshot.id;
-      return User._savePublishedRef(username, { ...post, id });
-    }).then(() => id);
+    const lastUpdated = new Date().getTime();
+    const postCopy = { ...post };
+
+    return User._saveInCollection(username, post, 'published', lastUpdated).then((snapshot) => {
+      postCopy.id = snapshot.id;
+      return User._savePublishedRef(username, { ...postCopy }, lastUpdated);
+    }).then(() => postCopy);
   };
 
 
-  static _savePublishedRef = (username, post) => {
+  static _savePublishedRef = (username, post, lastUpdated) => {
+    const created = post.created ? post.created : lastUpdated;
+
     return db.collection('users').doc(username).update({
       [`publishedRefs.${post.id}`]: {
         title: post.title,
+        created,
+        lastUpdated,
       },
     });
   };
@@ -108,17 +117,21 @@ class User {
     if (!draft.title || draft.title === '' || !draft.id || draft.id === '') {
       throw new InvalidArgumentError('Title and id cannot be empty');
     }
-    return User._updateInDraftsCollection(username, draft).then(() => {
-      return User._saveDraftRef(username, draft).then(() => {
-        return draft.id;
+    const lastUpdated = new Date().getTime();
+    return User._updateInDraftsCollection(username, draft, lastUpdated).then(() => {
+      return User._saveDraftRef(username, draft, lastUpdated).then(() => {
+        draft.lastUpdated = lastUpdated;
+        return draft;
       });
     });
   };
 
 
-  static _updateInDraftsCollection = (username, draft) => {
+  static _updateInDraftsCollection = (username, draft, lastUpdated) => {
     const draftCopy = { ...draft };
     delete draftCopy.id;
+    draftCopy.lastUpdated = lastUpdated;
+
     return db.collection('users').doc(username).collection('drafts').doc(draft.id)
       .update(draftCopy);
   };
@@ -150,28 +163,37 @@ class User {
     if (!draft.title || draft.title === '') {
       throw new InvalidArgumentError('Title cannot be empty');
     }
-    return User._saveInCollection(username, draft, 'drafts').then((ref) => {
-      return User._saveDraftRef(username, { ...draft, id: ref.id }).then(() => {
-        return ref.id;
+    const lastUpdated = new Date().getTime();
+    return User._saveInCollection(username, draft, 'drafts', lastUpdated).then((ref) => {
+      return User._saveDraftRef(username, { ...draft, id: ref.id }, lastUpdated).then(() => {
+        return { ...draft, id: ref.id, lastUpdated };
       });
     });
   };
 
 
-  static _saveInCollection = (username, post, collection) => {
+  static _saveInCollection = (username, post, collection, lastUpdated) => {
+    const created = post.created ? post.created : lastUpdated;
+
     return db.collection('users').doc(username).collection(collection).add({
       title: post.title,
       characters: post.characters,
       dialog: post.dialog,
       dialogCount: post.dialogCount,
+      created,
+      lastUpdated,
     });
   };
 
 
-  static _saveDraftRef = (username, draft) => {
+  static _saveDraftRef = (username, draft, lastUpdated) => {
+    const created = draft.created ? draft.created : lastUpdated;
+
     return db.collection('users').doc(username).update({
       [`draftRefs.${draft.id}`]: {
         title: draft.title,
+        created,
+        lastUpdated,
       },
     });
   };

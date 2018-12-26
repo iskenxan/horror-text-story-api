@@ -15,8 +15,8 @@ router.post('/published/unpublish', (req, res, next) => {
     next(new InvalidArgumentError('Post id cannot be empty'));
   }
 
-  User.unpublish(username, id).then((postId) => {
-    res.locals.result = postId;
+  User.unpublish(username, id).then((draft) => {
+    res.locals.result = draft;
     next();
   }).catch(error => next(error));
 });
@@ -31,8 +31,8 @@ router.post('/draft/publish', (req, res, next) => {
   if (draft.id) {
     User.deleteDraft(draft.id, username).catch(error => next(error));
   }
-  User.savePublished(draft, username).then((id) => {
-    res.locals.result = { published: id, oldDraft: draft.id };
+  User.savePublished(draft, username).then((published) => {
+    res.locals.result = published;
     next();
   }).catch(error => next(error));
 });
@@ -44,8 +44,8 @@ router.post('/draft/update', (req, res, next) => {
   if (!draft || !draft.id) {
     next(new InvalidArgumentError('Draft, draft id cannot be null'));
   }
-  User.updateDraft(username, draft).then(() => {
-    res.locals.result = draft.id;
+  User.updateDraft(username, draft).then((resultDraft) => {
+    res.locals.result = { ...resultDraft };
     next();
   }).catch(error => next(error));
 });
@@ -55,8 +55,8 @@ router.post('/draft/save', (req, res, next) => {
   const { draft } = req.body;
   const { username } = res.locals;
   if (draft) {
-    User.saveDraft(username, draft).then((id) => {
-      res.locals.result = id;
+    User.saveDraft(username, draft).then((savedDraft) => {
+      res.locals.result = { ...savedDraft };
       next();
     }).catch(error => next(error));
   } else {
@@ -100,7 +100,7 @@ router.post('/draft/delete', (req, res, next) => {
   const { id } = req.body;
   const { username } = res.locals;
   if (!id) {
-    next(new InvalidArgumentError('Draft id and username cannot be empty'));
+    next(new InvalidArgumentError('Draft id cannot be empty'));
   }
   User.deleteDraft(id, username).then(() => {
     res.locals.result = id;
