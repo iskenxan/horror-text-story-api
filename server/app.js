@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import user from './rest-handlers/user';
+import search from './rest-handlers/search';
 import { verifyToken } from './encrypt';
 
 import { AuthenticationError } from './utils/errors';
@@ -18,6 +19,7 @@ app.use((req, res, next) => {
 });
 
 
+// Security token check
 app.post('*', (req, res, next) => {
   const { token } = req.body;
   let notSecure = false;
@@ -36,7 +38,10 @@ app.post('*', (req, res, next) => {
   }
   return next(new AuthenticationError('No security token was passed'));
 });
+
+
 app.use('/user', user);
+app.use('/search', search);
 
 
 const resultHandling = (req, res, next) => {
