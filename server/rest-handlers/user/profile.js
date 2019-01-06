@@ -30,6 +30,35 @@ router.post('/me', (req, res, next) => {
 });
 
 
+router.post('/follow', (req, res, next) => {
+  const { username } = res.locals;
+  const { user, followingUsername, followingProfileUrl } = req.body;
+  if (username !== user.username) throw new InvalidArgumentError('user does not match the security token', 401);
+  if (!followingUsername) throw new InvalidArgumentError('follower username cannot be empty');
+
+  User.follow(followingUsername, followingProfileUrl, user).then(() => {
+    user.following[followingUsername] = { profileUrl: followingProfileUrl || '' };
+    res.locals.result = user;
+    return next();
+  })
+    .catch(error => next(error));
+});
+
+
+router.post('/unfollow', (req, res, next) => {
+  const { username } = res.locals;
+  const { user, followingUsername } = req.body;
+  if (username !== user.username) throw new InvalidArgumentError('user does not match the security token', 401);
+  if (!followingUsername || !user.following[followingUsername]) throw new InvalidArgumentError('invalid following');
+
+  User.unfollow(followingUsername, user).then(() => {
+    delete user.following[followingUsername];
+    res.locals.result = user;
+    return next();
+  });
+});
+
+
 const busboyMiddleWare = () => busboy({
   limits: {
     fileSize: 10 * 1024 * 1024,

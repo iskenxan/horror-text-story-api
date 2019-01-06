@@ -33,6 +33,36 @@ class User {
   };
 
 
+  static follow = (followingUsername, followingProfileUrl, follower) => {
+    let profileUrl = followingProfileUrl || '';
+    return db.collection('users').doc(follower.username).update({
+      [`following.${followingUsername}`]: {
+        profileUrl,
+      },
+    })
+      .then(() => {
+        profileUrl = follower.profileUrl || '';
+        return db.collection('users').doc(followingUsername).update({
+          [`followers.${follower.username}`]: {
+            profileUrl: follower.profileUrl,
+          },
+        });
+      });
+  };
+
+
+  static unfollow = (followingUsername, follower) => {
+    return db.collection('users').doc(follower.username).update({
+      [`following.${followingUsername}`]: adminFirestore.firestore.FieldValue.delete(),
+    })
+      .then(() => {
+        return db.collection('users').doc(followingUsername).update({
+          [`followers.${follower.username}`]: adminFirestore.firestore.FieldValue.delete(),
+        });
+      });
+  };
+
+
   static findUserByUsername(username) {
     return db.collection('users').doc(username).get();
   }
