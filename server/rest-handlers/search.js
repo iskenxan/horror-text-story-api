@@ -13,7 +13,12 @@ search.post('/users', (req, res, next) => {
   }
 
   searchForUsers(query).then((resultArray) => {
-    res.locals.result = resultArray;
+    const result = {};
+    resultArray.forEach((user) => {
+      result[user.username] = user;
+    });
+
+    res.locals.result = result;
     return next();
   })
     .catch(error => next(error));

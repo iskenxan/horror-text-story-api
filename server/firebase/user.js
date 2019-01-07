@@ -44,7 +44,7 @@ class User {
         profileUrl = follower.profileUrl || '';
         return db.collection('users').doc(followingUsername).update({
           [`followers.${follower.username}`]: {
-            profileUrl: follower.profileUrl,
+            profileUrl,
           },
         });
       });
