@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import user from './rest-handlers/user';
 import search from './rest-handlers/search';
+import posts from './rest-handlers/posts';
 import { verifyToken } from './encrypt';
 
 import { AuthenticationError } from './utils/errors';
@@ -42,11 +43,14 @@ app.post('*', (req, res, next) => {
 
 app.use('/user', user);
 app.use('/search', search);
+app.use('/posts', posts);
 
 
 const resultHandling = (req, res, next) => {
   if (res.locals.result) {
     res.status(200).send({ ok: true, result: res.locals.result });
+  } else {
+    res.status(200).send({ ok: true });
   }
   next();
 };

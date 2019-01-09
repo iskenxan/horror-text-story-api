@@ -33,6 +33,47 @@ class User {
   };
 
 
+  static removeFromFavorite = (authorUsername, postId, username) => {
+    const { FieldValue } = adminFirestore.firestore;
+    return db.collection('users').doc(authorUsername).collection('published').doc(postId)
+      .update({
+        favorite: FieldValue.arrayRemove(username),
+      })
+      .then(() => {
+        return db.collection('users').doc(authorUsername).update({
+          [`publishedRefs.${postId}.favorite`]: FieldValue.arrayRemove(username),
+        });
+      })
+      .then(() => {
+        return db.collection('users').doc(username).update({
+          [`favorite.${postId}`]: FieldValue.delete(),
+        });
+      });
+  };
+
+
+  static addToFavorite = (authorUsername, postId, title, username) => {
+    const { FieldValue } = adminFirestore.firestore;
+    return db.collection('users').doc(authorUsername).collection('published').doc(postId)
+      .update({
+        favorite: FieldValue.arrayUnion(username),
+      })
+      .then(() => {
+        return db.collection('users').doc(authorUsername).update({
+          [`publishedRefs.${postId}.favorite`]: FieldValue.arrayUnion(username),
+        });
+      })
+      .then(() => {
+        return db.collection('users').doc(username).update({
+          [`favorite.${postId}`]: {
+            author: authorUsername,
+            title,
+          },
+        });
+      });
+  };
+
+
   static follow = (followingUsername, followingProfileUrl, follower) => {
     let profileUrl = followingProfileUrl || '';
     return db.collection('users').doc(follower.username).update({
@@ -80,6 +121,7 @@ class User {
           throw new ResourceNotFound('Post was not found');
         }
         post = doc.data();
+        delete post.favorite;
         post.lastUpdated = lastUpdated;
         return db.collection('users').doc(username).collection('drafts').doc(postId)
           .set({ ...post });
