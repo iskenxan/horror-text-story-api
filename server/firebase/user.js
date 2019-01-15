@@ -37,11 +37,11 @@ class User {
     const { FieldValue } = adminFirestore.firestore;
     return db.collection('users').doc(authorUsername).collection('published').doc(postId)
       .update({
-        favorite: FieldValue.arrayRemove(username),
+        [`favorite.${username}`]: adminFirestore.firestore.FieldValue.delete(),
       })
       .then(() => {
         return db.collection('users').doc(authorUsername).update({
-          [`publishedRefs.${postId}.favorite`]: FieldValue.arrayRemove(username),
+          [`publishedRefs.${postId}.favorite.${username}`]: adminFirestore.firestore.FieldValue.delete(),
         });
       })
       .then(() => {
@@ -52,15 +52,17 @@ class User {
   };
 
 
-  static addToFavorite = (authorUsername, postId, title, username) => {
-    const { FieldValue } = adminFirestore.firestore;
+  static addToFavorite = (authorUsername, postId, title, username, profileUrl) => {
+    profileUrl = profileUrl || null;
     return db.collection('users').doc(authorUsername).collection('published').doc(postId)
       .update({
-        favorite: FieldValue.arrayUnion(username),
+        [`favorite.${username}`]: {
+          profileUrl,
+        },
       })
       .then(() => {
         return db.collection('users').doc(authorUsername).update({
-          [`publishedRefs.${postId}.favorite`]: FieldValue.arrayUnion(username),
+          [`publishedRefs.${postId}.favorite.${username}`]: profileUrl,
         });
       })
       .then(() => {

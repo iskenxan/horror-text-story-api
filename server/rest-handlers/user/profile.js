@@ -14,6 +14,21 @@ import {
 
 const router = express.Router();
 
+router.post('/other', (req, res, next) => {
+  const { username } = req.body;
+  if (!username) throw new InvalidArgumentError('Username cannot be empty');
+
+  User.findUserByUsername(username).then((doc) => {
+    if (!doc.exists) {
+      return next(new ResourceNotFound('User not found', 404));
+    }
+
+    res.locals.result = { ...doc.data(), hashedPassword: undefined, draftRefs: undefined };
+    return next();
+  })
+    .catch(error => next(error));
+});
+
 router.post('/me', (req, res, next) => {
   const { username } = res.locals;
   if (username) {
