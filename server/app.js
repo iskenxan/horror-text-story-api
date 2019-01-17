@@ -3,8 +3,8 @@ import bodyParser from 'body-parser';
 import user from './rest-handlers/user';
 import search from './rest-handlers/search';
 import posts from './rest-handlers/posts';
+import feed from './rest-handlers/feed';
 import { verifyToken } from './encrypt';
-
 import { AuthenticationError } from './utils/errors';
 
 const NON_SECURE_PATHS = ['/user/auth', '/user/profile/profile-image/save'];
@@ -44,6 +44,7 @@ app.post('*', (req, res, next) => {
 app.use('/user', user);
 app.use('/search', search);
 app.use('/posts', posts);
+app.use('/feed', feed);
 
 
 const resultHandling = (req, res, next) => {

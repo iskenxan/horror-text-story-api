@@ -2,8 +2,9 @@ import express from 'express';
 import User from '../../firebase/user';
 import {
   InvalidArgumentError,
+  ResourceNotFound,
 } from '../../utils/errors';
-
+import { addPostActivity, removePostActivity } from '../../stream';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post('/published/unpublish', (req, res, next) => {
   }
 
   User.unpublish(username, id).then((draft) => {
+    removePostActivity(username, id);
     res.locals.result = draft;
     next();
   }).catch(error => next(error));
@@ -32,6 +34,7 @@ router.post('/draft/publish', (req, res, next) => {
     User.deleteDraft(draft.id, username).catch(error => next(error));
   }
   User.savePublished(draft, username).then((published) => {
+    addPostActivity(username, published.id, published.title, published.lastUpdated);
     res.locals.result = published;
     next();
   }).catch(error => next(error));
@@ -75,6 +78,8 @@ router.post('/published/get', (req, res, next) => {
     if (doc.exists) {
       res.locals.result = { ...doc.data(), id: doc.id };
       next();
+    } else {
+      next(new ResourceNotFound('Post not found', 404));
     }
   }).catch(error => next(error));
 });

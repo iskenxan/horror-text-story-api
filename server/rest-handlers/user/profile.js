@@ -10,6 +10,7 @@ import {
 import {
   compressImage,
 } from '../../utils/file';
+import { addFollowerNotification, followUser, unfollowUser } from '../../stream';
 
 
 const router = express.Router();
@@ -28,6 +29,7 @@ router.post('/other', (req, res, next) => {
   })
     .catch(error => next(error));
 });
+
 
 router.post('/me', (req, res, next) => {
   const { username } = res.locals;
@@ -50,8 +52,9 @@ router.post('/follow', (req, res, next) => {
   const { user, followingUsername, followingProfileUrl } = req.body;
   if (username !== user.username) throw new InvalidArgumentError('user does not match the security token', 401);
   if (!followingUsername) throw new InvalidArgumentError('follower username cannot be empty');
-
   User.follow(followingUsername, followingProfileUrl, user).then(() => {
+    followUser(username, followingUsername);
+    addFollowerNotification(followingUsername, username);
     user.following[followingUsername] = { profileUrl: followingProfileUrl || '' };
     res.locals.result = user;
     return next();
@@ -67,6 +70,7 @@ router.post('/unfollow', (req, res, next) => {
   if (!followingUsername || !user.following[followingUsername]) throw new InvalidArgumentError('invalid following');
 
   User.unfollow(followingUsername, user).then(() => {
+    unfollowUser(username, followingUsername);
     delete user.following[followingUsername];
     res.locals.result = user;
     return next();

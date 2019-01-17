@@ -2,6 +2,7 @@ import express from 'express';
 import { InvalidArgumentError, ResourceNotFound } from '../utils/errors';
 import User from '../firebase/user';
 import Post from '../firebase/post';
+import { addFavoriteNotification, addCommentNotification } from '../stream';
 
 
 const posts = new express.Router();
@@ -33,7 +34,10 @@ posts.post('/add-favorite', (req, res, next) => {
       if (!doc.exists) next(new ResourceNotFound('Post not found', 404));
       return User.addToFavorite(authorUsername, id, postTitle, username, profileImgUrl);
     })
-    .then(() => next())
+    .then(() => {
+      addFavoriteNotification(username, authorUsername, id);
+      next();
+    })
     .catch(error => next(error));
 });
 
@@ -63,6 +67,7 @@ posts.post('/add-comment', (req, res, next) => {
     .then((doc) => {
       if (!doc.exists) return next(new ResourceNotFound('Could not find the post', 404));
       Post.addComment(authorUsername, id, comment).then((resultComment) => {
+        addCommentNotification(username, authorUsername, id);
         res.locals.result = resultComment;
         next();
       });
