@@ -72,8 +72,8 @@ const addCommentNotification = (username, authorUsername, postId) => {
 
 const getTimelineFeed = (username) => {
   const timeLineFeed = client.feed('timeline', username);
-  return timeLineFeed.get({ limit: 10 }).then((result) => {
-    console.log(result);
+  return timeLineFeed.get({ limit: 50 }).then((result) => {
+    return result;
   });
 };
 
@@ -81,7 +81,7 @@ const getTimelineFeed = (username) => {
 const getNotificationFeed = (username) => {
   const notificationFeed = client.feed('notifications', username);
   return notificationFeed.get({ limit: 100 }).then((result) => {
-    console.log(result);
+    return result;
   });
 };
 
