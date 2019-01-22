@@ -16,11 +16,12 @@ router.post('/published/unpublish', (req, res, next) => {
     next(new InvalidArgumentError('Post id cannot be empty'));
   }
 
-  User.unpublish(username, id).then((draft) => {
-    removePostActivity(username, id);
-    res.locals.result = draft;
-    next();
-  }).catch(error => next(error));
+  User.unpublish(username, id)
+    .then((draft) => {
+      removePostActivity(username, id);
+      res.locals.result = draft;
+      next();
+    }).catch(error => next(error));
 });
 
 
@@ -33,11 +34,19 @@ router.post('/draft/publish', (req, res, next) => {
   if (draft.id) {
     User.deleteDraft(draft.id, username).catch(error => next(error));
   }
-  User.savePublished(draft, username).then((published) => {
-    addPostActivity(username, published.id, published.title, published.lastUpdated);
-    res.locals.result = published;
-    next();
-  }).catch(error => next(error));
+  let published = null;
+  User.savePublished(draft, username)
+    .then((result) => {
+      published = result;
+      return addPostActivity(username, published.id, published.title, published.lastUpdated);
+    })
+    .then((result) => {
+      const { id: activityId } = result;
+      User.updatePublished(username, published.id, 'postActivityId', activityId);
+      res.locals.result = { ...published, postActivityId: activityId };
+      next();
+    })
+    .catch(error => next(error));
 });
 
 

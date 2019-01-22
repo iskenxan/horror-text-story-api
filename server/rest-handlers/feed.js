@@ -8,10 +8,12 @@ const feed = new express.Router();
 const formatFeed = (results) => {
   const formatted = {};
   const timeline = results.map(activity => ({
-    username: activity.actor,
+    author: activity.actor,
     id: activity.object,
-    postTitle: activity.postTitle,
+    title: activity.postTitle,
     lastUpdated: activity.timestamp,
+    favoriteCount: activity.reaction_counts.like,
+    commentCount: activity.reaction_counts.comment,
   }));
   formatted.timeline = timeline;
 

@@ -123,6 +123,7 @@ class User {
           throw new ResourceNotFound('Post was not found');
         }
         post = doc.data();
+        delete post.postActivityId;
         delete post.favorite;
         post.lastUpdated = lastUpdated;
         return db.collection('users').doc(username).collection('drafts').doc(postId)
@@ -175,6 +176,15 @@ class User {
         lastUpdated,
       },
     });
+  };
+
+
+  static updatePublished = (username, postId, updateKey, updateValue) => {
+    return db.collection('users').doc(username)
+      .collection('published').doc(postId)
+      .update({
+        [updateKey]: updateValue,
+      });
   };
 
   static getDraft = (username, draftId) => {

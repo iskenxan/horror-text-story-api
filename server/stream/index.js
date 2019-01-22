@@ -34,45 +34,60 @@ const unfollowUser = (username, following) => {
   timelinefeed.unfollow('user', following);
 };
 
-
-const addFollowerNotification = (username, followerUsername) => {
+const addNotification = (username, actor, verb) => {
   const notificationFeed = client.feed('notifications', username);
   return notificationFeed.addActivity({
-    actor: followerUsername,
-    verb: 'follow',
-    object: `${followerUsername}-follow-${username}`,
+    actor,
+    verb,
+    object: `${actor}-follow-${username}`,
     timestamp: new Date().getTime(),
   });
 };
 
 
-const addFavoriteNotification = (username, authorUsername, postId) => {
-  const userFeed = client.feed('user', username);
-  return userFeed.addActivity({
-    actor: username,
-    verb: 'like',
-    object: postId,
-    foreign_id: `like:${postId}`,
-    to: [`notifications:${authorUsername}`],
-  });
+const addFollowerNotification = (username, followerUsername) => {
+  return addNotification(username, followerUsername, 'follow');
 };
 
 
-const addCommentNotification = (username, authorUsername, postId) => {
-  const userFeed = client.feed('user', username);
-  return userFeed.addActivity({
+const getUserClient = () => {
+  const userToken = client.createUserToken('the-user-id');
+  return stream.connect(STREAM_KEY, userToken, '46620');
+};
+
+
+const addReaction = (username, authorUsername, type, postId, postActivityId) => {
+  const userClient = getUserClient();
+
+  return userClient.user(username).client.reactions.add(type, postActivityId, {
     actor: username,
-    verb: 'comment',
-    object: postId,
-    foreign_id: `comment:${postId}`,
-    to: [`notifications:${authorUsername}`],
-  });
+    timestamp: new Date().getTime(),
+  })
+    .then(() => {
+      return addNotification(authorUsername, username, type);
+    });
+};
+
+
+const addFavoriteNotification = (username, authorUsername, postId, postActivityId) => {
+  return addReaction(username, authorUsername, 'like', postId, postActivityId);
+};
+
+
+const addCommentNotification = (username, authorUsername, postId, postActivityId) => {
+  return addReaction(username, authorUsername, 'comment', postId, postActivityId);
 };
 
 
 const getTimelineFeed = (username) => {
   const timeLineFeed = client.feed('timeline', username);
-  return timeLineFeed.get({ limit: 50 }).then((result) => {
+  return timeLineFeed.get({
+    limit: 25,
+    enrich: true,
+    reactions: {
+      counts: true,
+    },
+  }).then((result) => {
     return result;
   });
 };
