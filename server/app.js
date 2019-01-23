@@ -7,6 +7,7 @@ import feed from './rest-handlers/feed';
 import { verifyToken } from './encrypt';
 import { AuthenticationError } from './utils/errors';
 
+
 const NON_SECURE_PATHS = ['/user/auth', '/user/profile/profile-image/save'];
 
 const app = express();

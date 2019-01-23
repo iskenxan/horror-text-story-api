@@ -50,24 +50,31 @@ const addFollowerNotification = (username, followerUsername) => {
 };
 
 
-const getUserClient = () => {
-  const userToken = client.createUserToken('the-user-id');
+const getUserClient = (username) => {
+  const userToken = client.createUserToken(username);
   return stream.connect(STREAM_KEY, userToken, '46620');
 };
 
 
 const addReaction = (username, authorUsername, type, postId, postActivityId) => {
-  const userClient = getUserClient();
+  const userClient = getUserClient(username);
 
-  return userClient.user(username).client.reactions.add(type, postActivityId, {
+  return userClient.reactions.add(type, postActivityId, {
     actor: username,
     timestamp: new Date().getTime(),
   })
-    .then(() => {
-      return addNotification(authorUsername, username, type);
+    .then((reactionResult) => {
+      addNotification(authorUsername, username, type);
+      return reactionResult;
     });
 };
 
+
+const removeFavoriteNotification = (username, reactionId) => {
+  return client.reactions.delete(reactionId, (secondResult) => {
+    console.log(secondResult);
+  });
+};
 
 const addFavoriteNotification = (username, authorUsername, postId, postActivityId) => {
   return addReaction(username, authorUsername, 'like', postId, postActivityId);
@@ -111,4 +118,5 @@ module.exports = {
   unfollowUser,
   getTimelineFeed,
   getNotificationFeed,
+  removeFavoriteNotification,
 };

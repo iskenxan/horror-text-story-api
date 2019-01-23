@@ -52,6 +52,14 @@ class User {
   };
 
 
+  static addFavoriteReactionId = (authorUsername, postId, username, reactionId) => {
+    return db.collection('users').doc(authorUsername).collection('published').doc(postId)
+      .update({
+        [`favorite.${username}.reactionId`]: reactionId,
+      });
+  };
+
+
   static addToFavorite = (authorUsername, postId, title, username, profileUrl) => {
     profileUrl = profileUrl || null;
     return db.collection('users').doc(authorUsername).collection('published').doc(postId)

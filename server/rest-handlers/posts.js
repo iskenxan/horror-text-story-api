@@ -2,7 +2,11 @@ import express from 'express';
 import { InvalidArgumentError, ResourceNotFound } from '../utils/errors';
 import User from '../firebase/user';
 import Post from '../firebase/post';
-import { addFavoriteNotification, addCommentNotification } from '../stream';
+import {
+  addFavoriteNotification,
+  addCommentNotification,
+  removeFavoriteNotification,
+} from '../stream';
 
 
 const posts = new express.Router();
@@ -37,7 +41,11 @@ posts.post('/add-favorite', (req, res, next) => {
       return User.addToFavorite(authorUsername, id, postTitle, username, profileImgUrl);
     })
     .then(() => {
-      addFavoriteNotification(username, authorUsername, id, postActivityId);
+      return addFavoriteNotification(username, authorUsername, id, postActivityId);
+    })
+    .then((result) => {
+      const { id: reactionId } = result;
+      User.addFavoriteReactionId(authorUsername, id, username, reactionId);
       next();
     })
     .catch(error => next(error));
@@ -48,12 +56,22 @@ posts.post('/remove-favorite', (req, res, next) => {
   const { username } = res.locals;
   const { id, authorUsername } = req.body;
 
+  let post = null;
   User.getPublished(authorUsername, id)
     .then((doc) => {
       if (!doc.exists) next(new ResourceNotFound('Post not found', 404));
+      post = doc.data();
       return User.removeFromFavorite(authorUsername, id, username);
     })
-    .then(() => next())
+    .then(() => {
+      const favoriteObj = post.favorite[username];
+      if (favoriteObj == null) {
+        return next();
+      }
+      const { reactionId } = favoriteObj;
+      removeFavoriteNotification(username, reactionId);
+      next();
+    })
     .catch(error => next(error));
 });
 
