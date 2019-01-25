@@ -7,6 +7,7 @@ import {
   addCommentNotification,
   removeFavoriteNotification,
 } from '../stream';
+import { addNewCommentToPostRank, addNewFavoriteToPostRank } from './feed/ranking-feed';
 
 
 const posts = new express.Router();
@@ -33,18 +34,19 @@ posts.post('/add-favorite', (req, res, next) => {
 
   if (!id || !authorUsername || !postTitle) throw new InvalidArgumentError('id, authorUsername and postTitle cannot be null');
 
-  let postActivityId;
+  let published;
   User.getPublished(authorUsername, id)
     .then((doc) => {
       if (!doc.exists) next(new ResourceNotFound('Post not found', 404));
-      ({ postActivityId } = doc.data());
+      published = doc.data();
       return User.addToFavorite(authorUsername, id, postTitle, username, profileImgUrl);
     })
     .then(() => {
-      return addFavoriteNotification(username, authorUsername, id, postActivityId);
+      return addFavoriteNotification(username, authorUsername, id, published.postActivityId);
     })
     .then((result) => {
       const { id: reactionId } = result;
+      addNewFavoriteToPostRank(published, id);
       User.addFavoriteReactionId(authorUsername, id, username, reactionId);
       next();
     })
@@ -83,19 +85,22 @@ posts.post('/add-comment', (req, res, next) => {
   if (!id || !authorUsername || !comment) throw new InvalidArgumentError('id, authorUsername and comment cannot be null');
   if (comment.username !== username) throw new InvalidArgumentError('comment does not belong to the user');
 
-  let postActivityId;
+  let resultComment;
+  let published;
   User.getPublished(authorUsername, id)
     .then((doc) => {
       if (!doc.exists) return next(new ResourceNotFound('Could not find the post', 404));
-      ({ postActivityId } = doc.data());
+      published = doc.data();
       return Post.addComment(authorUsername, id, comment);
     })
-    .then((resultComment) => {
-      addCommentNotification(username, authorUsername, id, postActivityId)
-        .then(() => {
-          res.locals.result = resultComment;
-          next();
-        });
+    .then((result) => {
+      resultComment = result;
+      addNewCommentToPostRank(published, id);
+      return addCommentNotification(username, authorUsername, id, published.postActivityId);
+    })
+    .then(() => {
+      res.locals.result = resultComment;
+      next();
     })
     .catch(error => next(error));
 });

@@ -1,8 +1,8 @@
 import express from 'express';
-import { getTimelineFeed, getNotificationFeed } from '../stream';
+import { getTimelineFeed, getNotificationFeed } from '../../stream';
+import { getRankedFeed } from './ranking-feed';
 
-
-const feed = new express.Router();
+const index = new express.Router();
 
 
 const formatFeed = (results) => {
@@ -21,17 +21,23 @@ const formatFeed = (results) => {
 };
 
 
-feed.post('/timeline/me', (req, res, next) => {
+index.post('/timeline/me', (req, res, next) => {
   const { username } = res.locals;
+  let feed;
   getTimelineFeed(username).then((result) => {
-    res.locals.result = formatFeed(result.results);
-    next();
+    feed = formatFeed(result.results);
+    return getRankedFeed();
   })
+    .then((rankedFeed) => {
+      feed.popular = rankedFeed;
+      res.locals.result = feed;
+      next();
+    })
     .catch(error => next(error));
 });
 
 
-feed.post('/notification/me', (req, res, next) => {
+index.post('/notification/me', (req, res, next) => {
   const { username } = res.locals;
   getNotificationFeed(username).then((result) => {
     res.locals.result = result;
@@ -40,4 +46,4 @@ feed.post('/notification/me', (req, res, next) => {
     .catch(error => next(error));
 });
 
-module.exports = feed;
+module.exports = index;

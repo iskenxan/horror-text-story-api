@@ -5,6 +5,7 @@ import {
   ResourceNotFound,
 } from '../../utils/errors';
 import { addPostActivity, removePostActivity } from '../../stream';
+import { addPostToRankingFeed, removePostFromRankingFeed } from '../feed/ranking-feed';
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.post('/published/unpublish', (req, res, next) => {
 
   User.unpublish(username, id)
     .then((draft) => {
+      removePostFromRankingFeed(id);
       removePostActivity(username, id);
       res.locals.result = draft;
       next();
@@ -38,6 +40,7 @@ router.post('/draft/publish', (req, res, next) => {
   User.savePublished(draft, username)
     .then((result) => {
       published = result;
+      addPostToRankingFeed(published, username);
       return addPostActivity(username, published.id, published.title, published.lastUpdated);
     })
     .then((result) => {
