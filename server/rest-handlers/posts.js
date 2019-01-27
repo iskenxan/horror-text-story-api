@@ -30,7 +30,7 @@ posts.post('/get', (req, res, next) => {
 posts.post('/add-favorite', (req, res, next) => {
   const { username } = res.locals;
   const {
-    id, authorUsername, postTitle, userProfileImgUrl: profileImgUrl,
+    id, authorUsername, postTitle,
   } = req.body;
 
   if (!id || !authorUsername || !postTitle) throw new InvalidArgumentError('id, authorUsername and postTitle cannot be null');
@@ -40,7 +40,7 @@ posts.post('/add-favorite', (req, res, next) => {
     .then((doc) => {
       if (!doc.exists) next(new ResourceNotFound('Post not found', 404));
       published = doc.data();
-      return User.addToFavorite(authorUsername, id, postTitle, username, profileImgUrl);
+      return User.addToFavorite(authorUsername, id, postTitle, username);
     })
     .then(() => {
       return addFavoriteNotification(username, authorUsername, id, published.postActivityId);
@@ -99,8 +99,8 @@ posts.post('/add-comment', (req, res, next) => {
     .then((result) => {
       resultComment = result;
       const rankedFeedItem = getRankFeedItem(published, authorUsername, id);
-      rankedFeedItem.commentsCount += 1;
-      addNewCommentToPostRank(published);
+      rankedFeedItem.commentCount += 1;
+      addNewCommentToPostRank(rankedFeedItem);
       return addCommentNotification(username, authorUsername, id, published.postActivityId);
     })
     .then(() => {

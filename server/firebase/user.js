@@ -10,8 +10,8 @@ class User {
     this.hashedPassword = generateHashedPassword(password);
     this.publishedRefs = {};
     this.draftRefs = {};
-    this.followers = {};
-    this.following = {};
+    this.followers = [];
+    this.following = [];
   }
 
 
@@ -37,11 +37,11 @@ class User {
     const { FieldValue } = adminFirestore.firestore;
     return db.collection('users').doc(authorUsername).collection('published').doc(postId)
       .update({
-        [`favorite.${username}`]: adminFirestore.firestore.FieldValue.delete(),
+        [`favorite.${username}`]: FieldValue.delete(),
       })
       .then(() => {
         return db.collection('users').doc(authorUsername).update({
-          [`publishedRefs.${postId}.favorite.${username}`]: adminFirestore.firestore.FieldValue.delete(),
+          [`publishedRefs.${postId}.favorite`]: FieldValue.arrayRemove(username),
         });
       })
       .then(() => {
@@ -60,17 +60,14 @@ class User {
   };
 
 
-  static addToFavorite = (authorUsername, postId, title, username, profileUrl) => {
-    profileUrl = profileUrl || null;
+  static addToFavorite = (authorUsername, postId, title, username) => {
     return db.collection('users').doc(authorUsername).collection('published').doc(postId)
       .update({
-        [`favorite.${username}`]: {
-          profileUrl,
-        },
+        [`favorite.${username}`]: { username },
       })
       .then(() => {
         return db.collection('users').doc(authorUsername).update({
-          [`publishedRefs.${postId}.favorite.${username}`]: profileUrl,
+          [`publishedRefs.${postId}.favorite`]: adminFirestore.firestore.FieldValue.arrayUnion(username),
         });
       })
       .then(() => {
@@ -84,31 +81,27 @@ class User {
   };
 
 
-  static follow = (followingUsername, followingProfileUrl, follower) => {
-    let profileUrl = followingProfileUrl || '';
-    return db.collection('users').doc(follower.username).update({
-      [`following.${followingUsername}`]: {
-        profileUrl,
-      },
-    })
+  static follow = (followingUsername, follower) => {
+    return db.collection('users').doc(follower.username)
+      .update({
+        following: adminFirestore.firestore.FieldValue.arrayUnion(followingUsername),
+      })
       .then(() => {
-        profileUrl = follower.profileUrl || '';
         return db.collection('users').doc(followingUsername).update({
-          [`followers.${follower.username}`]: {
-            profileUrl,
-          },
+          followers: adminFirestore.firestore.FieldValue.arrayUnion(follower.username),
         });
       });
   };
 
 
   static unfollow = (followingUsername, follower) => {
-    return db.collection('users').doc(follower.username).update({
-      [`following.${followingUsername}`]: adminFirestore.firestore.FieldValue.delete(),
-    })
+    return db.collection('users').doc(follower.username)
+      .update({
+        following: adminFirestore.firestore.FieldValue.arrayRemove(followingUsername),
+      })
       .then(() => {
         return db.collection('users').doc(followingUsername).update({
-          [`followers.${follower.username}`]: adminFirestore.firestore.FieldValue.delete(),
+          followers: adminFirestore.firestore.FieldValue.arrayRemove(follower.username),
         });
       });
   };

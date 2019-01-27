@@ -4,8 +4,8 @@ const getRankFeedItem = (postData, author, id) => {
     id,
     author,
     favoriteCount: favorite ? Object.keys(favorite).length : 0,
-    commentsCount: comments ? comments.length : 0,
-    timestamp: postData.lastUpdated,
+    commentCount: comments ? comments.length : 0,
+    lastUpdated: postData.lastUpdated,
     title: postData.title,
   };
 };

@@ -27,40 +27,40 @@ const getPost = (posts, postId) => {
 };
 
 
-const addPostToRankingFeed = (post) => {
+const addPostToRankingFeed = (rankedFeedItem) => {
   return getFeed()
-    .then((posts) => {
-      if (Object.keys(posts).length >= 2) return;
-      posts[post.id] = post;
-      return updateFeed(posts);
+    .then((feedItems) => {
+      if (Object.keys(feedItems).length >= 3) return;
+      feedItems[rankedFeedItem.id] = rankedFeedItem;
+      return updateFeed(feedItems);
     });
 };
 
 
 const removePostFromRankingFeed = (postId) => {
   return getFeed()
-    .then((posts) => {
-      const post = getPost(posts, postId);
+    .then((feedItems) => {
+      const post = getPost(feedItems, postId);
       if (!post) return;
 
-      delete posts[postId];
-      return updateFeed(posts);
+      delete feedItems[postId];
+      return updateFeed(feedItems);
     });
 };
 
 
-const addRanking = (post) => {
-  const favoritePoints = post.favoriteCount || 0;
-  const commentPoints = post.commentCount ? post.commentCount * 2 : 0;
+const addRanking = (feedItem) => {
+  const favoritePoints = feedItem.favoriteCount || 0;
+  const commentPoints = feedItem.commentCount ? feedItem.commentCount * 2 : 0;
 
   const ranking = favoritePoints + commentPoints;
 
-  return { ...post, ranking };
+  return { ...feedItem, ranking };
 };
 
 
-const orderPosts = (posts) => {
-  let array = Object.keys(posts).map(key => ({ id: key, ...posts[key] }));
+const orderRankedFeedItems = (feedItems) => {
+  let array = Object.keys(feedItems).map(key => ({ id: key, ...feedItems[key] }));
   array = array.map(post => addRanking(post));
   array = _.sortBy(array, 'ranking');
   array = _.reverse(array);
@@ -69,50 +69,50 @@ const orderPosts = (posts) => {
 };
 
 
-const convertArrayPostsToObject = (posts) => {
-  posts.forEach(post => delete post.ranking);
+const convertArrayFeedItemsToObject = (feedItems) => {
+  feedItems.forEach(post => delete post.ranking);
 
-  return _.keyBy(posts, 'id');
+  return _.keyBy(feedItems, 'id');
 };
 
 
-const addReactionToPostRank = (post, reaction) => {
+const addReactionToPostRank = (feedItem, reaction) => {
   return getFeed()
-    .then((posts) => {
-      const extractedPost = getPost(posts, post.id);
+    .then((feedItems) => {
+      const extractedPost = getPost(feedItems, feedItem.id);
       if (extractedPost) {
         extractedPost[reaction] = extractedPost[reaction]
           ? extractedPost[reaction] + 1 : 1;
-        return updateFeed(posts);
+        return updateFeed(feedItems);
       }
-      post = addRanking(post);
-      posts = orderPosts(posts);
-      const lastIndex = posts.length - 1;
-      const lowestRankingPost = posts[lastIndex];
-      if (lowestRankingPost.ranking < post.ranking) {
-        posts[lastIndex] = post;
-        posts = convertArrayPostsToObject(posts);
+      feedItem = addRanking(feedItem);
+      feedItems = orderRankedFeedItems(feedItems);
+      const lastIndex = feedItems.length - 1;
+      const lowestRankingItem = feedItems[lastIndex];
+      if (lowestRankingItem.ranking < feedItem.ranking) {
+        feedItems[lastIndex] = feedItem;
+        feedItems = convertArrayFeedItemsToObject(feedItems);
 
-        return updateFeed(posts);
+        return updateFeed(feedItems);
       }
     });
 };
 
 
-const addNewCommentToPostRank = (post) => {
-  return addReactionToPostRank(post, 'commentCount');
+const addNewCommentToPostRank = (rankedFeedItem) => {
+  return addReactionToPostRank(rankedFeedItem, 'commentCount');
 };
 
 
-const addNewFavoriteToPostRank = (post) => {
-  return addReactionToPostRank(post, 'favoriteCount');
+const addNewFavoriteToPostRank = (rankedFeedItem) => {
+  return addReactionToPostRank(rankedFeedItem, 'favoriteCount');
 };
 
 
 const getRankedFeed = () => {
   return getFeed()
-    .then((posts) => {
-      return orderPosts(posts);
+    .then((feedItems) => {
+      return orderRankedFeedItems(feedItems);
     });
 };
 
