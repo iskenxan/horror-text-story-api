@@ -6,6 +6,8 @@ import {
 } from '../../utils/errors';
 import { addPostActivity, removePostActivity } from '../../stream';
 import { addPostToRankingFeed, removePostFromRankingFeed } from '../feed/ranking-feed';
+import { getRankFeedItem } from '../../utils/formatter'
+
 
 const router = express.Router();
 
@@ -40,7 +42,8 @@ router.post('/draft/publish', (req, res, next) => {
   User.savePublished(draft, username)
     .then((result) => {
       published = result;
-      addPostToRankingFeed(published, username);
+      const rankedFeedItem = getRankFeedItem(published, username, published.id);
+      addPostToRankingFeed(rankedFeedItem);
       return addPostActivity(username, published.id, published.title, published.lastUpdated);
     })
     .then((result) => {

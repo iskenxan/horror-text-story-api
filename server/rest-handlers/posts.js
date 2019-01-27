@@ -8,6 +8,7 @@ import {
   removeFavoriteNotification,
 } from '../stream';
 import { addNewCommentToPostRank, addNewFavoriteToPostRank } from './feed/ranking-feed';
+import { getRankFeedItem } from '../utils/formatter';
 
 
 const posts = new express.Router();
@@ -46,7 +47,9 @@ posts.post('/add-favorite', (req, res, next) => {
     })
     .then((result) => {
       const { id: reactionId } = result;
-      addNewFavoriteToPostRank(published, id);
+      const rankedFeedItem = getRankFeedItem(published, authorUsername, id);
+      rankedFeedItem.favoriteCount += 1;
+      addNewFavoriteToPostRank(rankedFeedItem);
       User.addFavoriteReactionId(authorUsername, id, username, reactionId);
       next();
     })
@@ -95,7 +98,9 @@ posts.post('/add-comment', (req, res, next) => {
     })
     .then((result) => {
       resultComment = result;
-      addNewCommentToPostRank(published, id);
+      const rankedFeedItem = getRankFeedItem(published, authorUsername, id);
+      rankedFeedItem.commentsCount += 1;
+      addNewCommentToPostRank(published);
       return addCommentNotification(username, authorUsername, id, published.postActivityId);
     })
     .then(() => {

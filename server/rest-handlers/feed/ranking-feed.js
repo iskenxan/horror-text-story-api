@@ -27,17 +27,11 @@ const getPost = (posts, postId) => {
 };
 
 
-const addPostToRankingFeed = (post, authorUsername) => {
+const addPostToRankingFeed = (post) => {
   return getFeed()
     .then((posts) => {
-      if (Object.keys(posts).length >= 3) return;
-      posts[post.id] = {
-        title: post.title,
-        author: authorUsername,
-        timestamp: post.lastUpdated,
-        favoriteCount: 0,
-        commentCount: 0,
-      };
+      if (Object.keys(posts).length >= 2) return;
+      posts[post.id] = post;
       return updateFeed(posts);
     });
 };
@@ -56,18 +50,10 @@ const removePostFromRankingFeed = (postId) => {
 
 
 const addRanking = (post) => {
-  let favoritePoints = post.favoriteCount ? post.favoriteCount : 0;
-  favoritePoints = favoritePoints === 0 && post.favorite
-    ? Object.keys(post.favorite).length : favoritePoints;
-
-  let commentPoints = post.commentCount ? post.commentCount * 2 : 0;
-  commentPoints = commentPoints === 0 && post.comments
-    ? Object.keys(post.comments).length : commentPoints;
+  const favoritePoints = post.favoriteCount || 0;
+  const commentPoints = post.commentCount ? post.commentCount * 2 : 0;
 
   const ranking = favoritePoints + commentPoints;
-
-  post.favoriteCount = favoritePoints;
-  post.commentCount = commentPoints / 2;
 
   return { ...post, ranking };
 };
@@ -83,10 +69,17 @@ const orderPosts = (posts) => {
 };
 
 
-const addReactionToPostRank = (post, postId, reaction) => {
+const convertArrayPostsToObject = (posts) => {
+  posts.forEach(post => delete post.ranking);
+
+  return _.keyBy(posts, 'id');
+};
+
+
+const addReactionToPostRank = (post, reaction) => {
   return getFeed()
     .then((posts) => {
-      const extractedPost = getPost(posts, postId);
+      const extractedPost = getPost(posts, post.id);
       if (extractedPost) {
         extractedPost[reaction] = extractedPost[reaction]
           ? extractedPost[reaction] + 1 : 1;
@@ -98,19 +91,21 @@ const addReactionToPostRank = (post, postId, reaction) => {
       const lowestRankingPost = posts[lastIndex];
       if (lowestRankingPost.ranking < post.ranking) {
         posts[lastIndex] = post;
+        posts = convertArrayPostsToObject(posts);
+
         return updateFeed(posts);
       }
     });
 };
 
 
-const addNewCommentToPostRank = (post, postId) => {
-  return addReactionToPostRank(post, postId, 'commentCount');
+const addNewCommentToPostRank = (post) => {
+  return addReactionToPostRank(post, 'commentCount');
 };
 
 
-const addNewFavoriteToPostRank = (post, postId) => {
-  return addReactionToPostRank(post, postId, 'favoriteCount');
+const addNewFavoriteToPostRank = (post) => {
+  return addReactionToPostRank(post, 'favoriteCount');
 };
 
 
