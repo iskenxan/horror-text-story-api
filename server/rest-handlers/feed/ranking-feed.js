@@ -99,6 +99,19 @@ const addReactionToPostRank = (feedItem, reaction) => {
 };
 
 
+const removeFavoriteFromPostRank = (postId) => {
+  return getFeed()
+    .then((posts) => {
+      const post = getPost(posts, postId);
+      if (!post) return;
+
+      post.favoriteCount -= 1;
+
+      updateFeed(posts);
+    });
+};
+
+
 const addNewCommentToPostRank = (rankedFeedItem) => {
   return addReactionToPostRank(rankedFeedItem, 'commentCount');
 };
@@ -123,4 +136,5 @@ module.exports = {
   addNewFavoriteToPostRank,
   getRankedFeed,
   removePostFromRankingFeed,
+  removeFavoriteFromPostRank,
 };

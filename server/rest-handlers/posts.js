@@ -7,7 +7,11 @@ import {
   addCommentNotification,
   removeFavoriteNotification,
 } from '../stream';
-import { addNewCommentToPostRank, addNewFavoriteToPostRank } from './feed/ranking-feed';
+import {
+  addNewCommentToPostRank,
+  addNewFavoriteToPostRank,
+  removeFavoriteFromPostRank,
+} from './feed/ranking-feed';
 import { getRankFeedItem } from '../utils/formatter';
 
 
@@ -74,6 +78,7 @@ posts.post('/remove-favorite', (req, res, next) => {
         return next();
       }
       const { reactionId } = favoriteObj;
+      removeFavoriteFromPostRank(id);
       removeFavoriteNotification(username, reactionId);
       next();
     })

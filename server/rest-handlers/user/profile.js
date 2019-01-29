@@ -87,15 +87,11 @@ const busboyMiddleWare = () => busboy({
 
 
 const compressAndSaveImage = (data, username) => {
-  let profileUrl = null;
   return compressImage(data)
     .then((buffer) => {
       return saveImageToBucket(buffer, `${username}.jpg`);
     })
-    .then((imageUrl) => {
-      profileUrl = imageUrl;
-      return User.saveProfileImageUrl(imageUrl, username);
-    }).then(() => profileUrl);
+    .then(imageUrl => imageUrl);
 };
 
 
