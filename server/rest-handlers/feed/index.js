@@ -46,4 +46,13 @@ index.post('/notification/me', (req, res, next) => {
     .catch(error => next(error));
 });
 
+
+index.post('/notification/count', (req, res, next) => {
+  const { username } = res.locals;
+  getNotificationFeed(username).then((result) => {
+    res.locals.result = result;
+    next();
+  });
+});
+
 module.exports = index;
