@@ -37,22 +37,25 @@ index.post('/timeline/me', (req, res, next) => {
 });
 
 
+const formatResult = (result) => {
+  result.results.forEach((type) => {
+    type.activities.forEach((activity) => {
+      const activityObject = activity.object;
+      delete activity.object;
+      activity.activityObject = activityObject;
+    });
+  });
+};
+
+
 index.post('/notification/me', (req, res, next) => {
   const { username } = res.locals;
   getNotificationFeed(username).then((result) => {
+    formatResult(result);
     res.locals.result = result;
     next();
   })
     .catch(error => next(error));
-});
-
-
-index.post('/notification/count', (req, res, next) => {
-  const { username } = res.locals;
-  getNotificationFeed(username).then((result) => {
-    res.locals.result = result;
-    next();
-  });
 });
 
 module.exports = index;

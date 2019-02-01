@@ -34,19 +34,19 @@ const unfollowUser = (username, following) => {
   timelinefeed.unfollow('user', following);
 };
 
-const addNotification = (username, actor, verb) => {
+const addNotification = (username, actor, verb, object) => {
   const notificationFeed = client.feed('notifications', username);
   return notificationFeed.addActivity({
     actor,
     verb,
-    object: `${actor}-follow-${username}`,
+    object,
     timestamp: new Date().getTime(),
   });
 };
 
 
 const addFollowerNotification = (username, followerUsername) => {
-  return addNotification(username, followerUsername, 'follow');
+  return addNotification(username, followerUsername, 'follow', `${followerUsername}-follow-${username}`);
 };
 
 
@@ -64,7 +64,7 @@ const addReaction = (username, authorUsername, type, postId, postActivityId) => 
     timestamp: new Date().getTime(),
   })
     .then((reactionResult) => {
-      addNotification(authorUsername, username, type);
+      addNotification(authorUsername, username, type, postId);
       return reactionResult;
     });
 };
@@ -102,7 +102,7 @@ const getTimelineFeed = (username) => {
 
 const getNotificationFeed = (username) => {
   const notificationFeed = client.feed('notifications', username);
-  return notificationFeed.get({ limit: 100 }).then((result) => {
+  return notificationFeed.get({ limit: 100, mark_seen: true }).then((result) => {
     return result;
   });
 };
