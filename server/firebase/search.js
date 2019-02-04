@@ -24,4 +24,19 @@ const searchForUsers = (queryItem) => {
 };
 
 
-module.exports = { searchForUsers };
+const searchSuggested = () => {
+  return db.collection('users').limit(20).get().then((snapshot) => {
+    const result = {};
+    snapshot.forEach((doc) => {
+      const userData = doc.data();
+      delete userData.hashedPassword;
+
+      result[userData.username] = userData;
+    });
+
+    return result;
+  });
+};
+
+
+module.exports = { searchForUsers, searchSuggested };

@@ -174,6 +174,8 @@ class User {
         title: post.title,
         created,
         lastUpdated,
+        author: username,
+        id: post.id,
       },
     });
   };
@@ -249,8 +251,11 @@ class User {
     }
     const lastUpdated = new Date().getTime();
     return User._saveInCollection(username, draft, 'drafts', lastUpdated).then((ref) => {
+      const { id } = ref;
       return User._saveDraftRef(username, { ...draft, id: ref.id }, lastUpdated).then(() => {
-        return { ...draft, id: ref.id, lastUpdated };
+        return {
+          ...draft, id, lastUpdated, author: username,
+        };
       });
     });
   };
@@ -258,14 +263,20 @@ class User {
 
   static _saveInCollection = (username, post, collection, lastUpdated) => {
     const created = post.created ? post.created : lastUpdated;
-
-    return db.collection('users').doc(username).collection(collection).add({
+    const ref = db.collection('users').doc(username).collection(collection).doc();
+    const { id } = ref;
+    return ref.set({
       title: post.title,
       characters: post.characters,
       dialog: post.dialog,
       dialogCount: post.dialogCount,
       created,
       lastUpdated,
+      author: username,
+      favorite: {},
+      id,
+    }).then(() => {
+      return ref;
     });
   };
 
@@ -278,6 +289,9 @@ class User {
         title: draft.title,
         created,
         lastUpdated,
+        author: username,
+        favorite: [],
+        id: draft.id,
       },
     });
   };

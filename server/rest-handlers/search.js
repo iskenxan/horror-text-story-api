@@ -1,6 +1,6 @@
 import express from 'express';
 import { InvalidArgumentError } from '../utils/errors';
-import { searchForUsers } from '../firebase/search';
+import { searchForUsers, searchSuggested } from '../firebase/search';
 
 
 const search = express.Router();
@@ -22,6 +22,15 @@ search.post('/users', (req, res, next) => {
     return next();
   })
     .catch(error => next(error));
+});
+
+
+search.post('/suggested', (req, res, next) => {
+  searchSuggested()
+    .then((result) => {
+      res.locals.result = result;
+      return next();
+    });
 });
 
 module.exports = search;
