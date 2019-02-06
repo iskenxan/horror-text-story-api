@@ -125,6 +125,7 @@ class User {
         post = doc.data();
         delete post.postActivityId;
         delete post.favorite;
+        delete post.comments;
         post.lastUpdated = lastUpdated;
         return db.collection('users').doc(username).collection('drafts').doc(postId)
           .set({ ...post });
@@ -176,6 +177,7 @@ class User {
         lastUpdated,
         author: username,
         id: post.id,
+        favorite: [],
       },
     });
   };

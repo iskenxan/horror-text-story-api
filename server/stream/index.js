@@ -34,19 +34,21 @@ const unfollowUser = (username, following) => {
   timelinefeed.unfollow('user', following);
 };
 
-const addNotification = (username, actor, verb, object) => {
+const addNotification = (username, actor, verb, foreignId, object) => {
   const notificationFeed = client.feed('notifications', username);
   return notificationFeed.addActivity({
     actor,
     verb,
     object,
+    foreign_id: foreignId,
     timestamp: new Date().getTime(),
   });
 };
 
 
 const addFollowerNotification = (username, followerUsername) => {
-  return addNotification(username, followerUsername, 'follow', `${followerUsername}-follow-${username}`);
+  const foreignId = `${followerUsername}-follow-${username}`;
+  return addNotification(username, followerUsername, 'follow', foreignId, foreignId);
 };
 
 
@@ -64,7 +66,7 @@ const addReaction = (username, authorUsername, type, postId, postActivityId) => 
     timestamp: new Date().getTime(),
   })
     .then((reactionResult) => {
-      addNotification(authorUsername, username, type, postId);
+      addNotification(authorUsername, username, type, postId, postId);
       return reactionResult;
     });
 };
@@ -100,6 +102,12 @@ const getTimelineFeed = (username) => {
 };
 
 
+const removePostNotifications = (author, postId) => {
+  const notificationFeed = client.feed('notifications', author);
+  return notificationFeed.removeActivity({ foreignId: postId });
+};
+
+
 const getNotificationFeed = (username) => {
   const notificationFeed = client.feed('notifications', username);
   return notificationFeed.get({ limit: 100, mark_seen: true }).then((result) => {
@@ -119,4 +127,5 @@ module.exports = {
   getTimelineFeed,
   getNotificationFeed,
   removeFavoriteNotification,
+  removePostNotifications,
 };

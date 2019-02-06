@@ -4,7 +4,7 @@ import {
   InvalidArgumentError,
   ResourceNotFound,
 } from '../../utils/errors';
-import { addPostActivity, removePostActivity } from '../../stream';
+import { addPostActivity, removePostActivity, removePostNotifications } from '../../stream';
 import { addPostToRankingFeed, removePostFromRankingFeed } from '../feed/ranking-feed';
 import { getRankFeedItem } from '../../utils/formatter'
 
@@ -23,6 +23,7 @@ router.post('/published/unpublish', (req, res, next) => {
     .then((draft) => {
       removePostFromRankingFeed(id);
       removePostActivity(username, id);
+      removePostNotifications(username, id);
       res.locals.result = draft;
       next();
     }).catch(error => next(error));

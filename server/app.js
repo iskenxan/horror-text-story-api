@@ -71,6 +71,7 @@ const errorHandling = (err, req, res, next) => {
   if (!process.env.NODE_ENV || !process.evn.NODE_ENV === 'production') {
     stackTrace = err.stack;
   }
+  console.log(stackTrace);
   res.status(status).send({
     ok: false,
     error: {

@@ -106,7 +106,9 @@ posts.post('/add-comment', (req, res, next) => {
       const rankedFeedItem = getRankFeedItem(published, authorUsername, id);
       rankedFeedItem.commentCount += 1;
       addNewCommentToPostRank(rankedFeedItem);
-      return addCommentNotification(username, authorUsername, id, published.postActivityId);
+      if (authorUsername !== username) {
+        return addCommentNotification(username, authorUsername, id, published.postActivityId);
+      }
     })
     .then(() => {
       res.locals.result = resultComment;
