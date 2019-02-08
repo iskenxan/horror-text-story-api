@@ -13,8 +13,9 @@
     "start-dev": "node bin/dev",
     "start": "node dist/app.js",
     "clean": "rm -rf dist",
-    "build": "npm run clean && mkdir dist && cp server/empty-firebase-admin-sdk.json dist/firebase-admin-sdk.json && babel server -s -d dist",
-    "production": "npm run build && node bin/production"
+    "build": "npm run clean && mkdir dist && cp server/firebase-admin-sdk.json dist && babel server -s -d dist",
+    "production": "npm run build && node bin/production",
+    "deploy-heroku": "npm run build && git push heroku"
   },
   "dependencies": {
     "babel-eslint": "^10.0.1",
