@@ -66,12 +66,12 @@ const errorHandling = (err, req, res, next) => {
   if (err.code === 5) {
     status = 404;
   }
+  console.log(err.stack);
   const message = status === 500 ? 'Internal server error' : err.message;
   let stackTrace = null;
-  if (!process.env.NODE_ENV || !process.evn.NODE_ENV === 'production') {
+  if (process.env && (!process.env.NODE_ENV || process.evn.NODE_ENV !== 'production')) {
     stackTrace = err.stack;
   }
-  console.log(stackTrace);
   res.status(status).send({
     ok: false,
     error: {
