@@ -13,11 +13,29 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 var initializeFirebaseConnection = function initializeFirebaseConnection() {
-  admin.initializeApp({
-    credential: admin.credential.cert(_firebaseAdminSdk2.default),
-    databaseURL: 'https://travelguide-bf6df.firebaseio.com',
-    storageBucket: 'travelguide-bf6df.appspot.com'
-  });
+  var _process$env = process.env,
+      CLIENT_EMAIL = _process$env.CLIENT_EMAIL,
+      PRIVATE_KEY = _process$env.PRIVATE_KEY,
+      PROJECT_ID = _process$env.PROJECT_ID;
+
+
+  if (CLIENT_EMAIL && PRIVATE_KEY && PROJECT_ID) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: PROJECT_ID,
+        clientEmail: CLIENT_EMAIL,
+        privateKey: PRIVATE_KEY
+      }),
+      databaseURL: 'https://travelguide-bf6df.firebaseio.com',
+      storageBucket: 'travelguide-bf6df.appspot.com'
+    });
+  } else {
+    admin.initializeApp({
+      credential: admin.credential.cert(_firebaseAdminSdk2.default),
+      databaseURL: 'https://travelguide-bf6df.firebaseio.com',
+      storageBucket: 'travelguide-bf6df.appspot.com'
+    });
+  }
 };
 
 initializeFirebaseConnection();
