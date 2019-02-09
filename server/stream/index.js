@@ -58,7 +58,8 @@ const getUserClient = (username) => {
 };
 
 
-const addReaction = (username, authorUsername, type, postId, postActivityId) => {
+const addReaction = (username, authorUsername, type, postId,
+  postActivityId, notifyMaker = false) => {
   const userClient = getUserClient(username);
 
   return userClient.reactions.add(type, postActivityId, {
@@ -66,7 +67,9 @@ const addReaction = (username, authorUsername, type, postId, postActivityId) => 
     timestamp: new Date().getTime(),
   })
     .then((reactionResult) => {
-      addNotification(authorUsername, username, type, postId, postId);
+      if (notifyMaker) {
+        addNotification(authorUsername, username, type, postId, postId);
+      }
       return reactionResult;
     });
 };
@@ -83,8 +86,8 @@ const addFavoriteNotification = (username, authorUsername, postId, postActivityI
 };
 
 
-const addCommentNotification = (username, authorUsername, postId, postActivityId) => {
-  return addReaction(username, authorUsername, 'comment', postId, postActivityId);
+const addCommentNotification = (username, authorUsername, postId, postActivityId, notifyMaker) => {
+  return addReaction(username, authorUsername, 'comment', postId, postActivityId, notifyMaker);
 };
 
 

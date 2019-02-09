@@ -51,9 +51,10 @@ const removePostFromRankingFeed = (postId) => {
 
 const addRanking = (feedItem) => {
   const favoritePoints = feedItem.favoriteCount || 0;
-  const commentPoints = feedItem.commentCount ? feedItem.commentCount * 2 : 0;
+  // const commentPoints = feedItem.commentCount ? feedItem.commentCount * 2 : 0;
 
-  const ranking = favoritePoints + commentPoints;
+  // const ranking = favoritePoints + commentPoints;
+  const ranking = favoritePoints;
 
   return { ...feedItem, ranking };
 };
