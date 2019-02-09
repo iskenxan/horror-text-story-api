@@ -53,9 +53,9 @@ var removePostFromRankingFeed = function removePostFromRankingFeed(postId) {
 
 var addRanking = function addRanking(feedItem) {
   var favoritePoints = feedItem.favoriteCount || 0;
-  var commentPoints = feedItem.commentCount ? feedItem.commentCount * 2 : 0;
-
-  var ranking = favoritePoints + commentPoints;
+  // const commentPoints = feedItem.commentCount ? feedItem.commentCount * 2 : 0;
+  // const ranking = favoritePoints + commentPoints;
+  var ranking = favoritePoints;
 
   return _extends({}, feedItem, { ranking: ranking });
 };

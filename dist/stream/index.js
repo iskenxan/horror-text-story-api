@@ -61,13 +61,17 @@ var getUserClient = function getUserClient(username) {
 };
 
 var addReaction = function addReaction(username, authorUsername, type, postId, postActivityId) {
+  var notifyMaker = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+
   var userClient = getUserClient(username);
 
   return userClient.reactions.add(type, postActivityId, {
     actor: username,
     timestamp: new Date().getTime()
   }).then(function (reactionResult) {
-    addNotification(authorUsername, username, type, postId, postId);
+    if (notifyMaker) {
+      addNotification(authorUsername, username, type, postId, postId);
+    }
     return reactionResult;
   });
 };
@@ -82,8 +86,8 @@ var addFavoriteNotification = function addFavoriteNotification(username, authorU
   return addReaction(username, authorUsername, 'like', postId, postActivityId);
 };
 
-var addCommentNotification = function addCommentNotification(username, authorUsername, postId, postActivityId) {
-  return addReaction(username, authorUsername, 'comment', postId, postActivityId);
+var addCommentNotification = function addCommentNotification(username, authorUsername, postId, postActivityId, notifyMaker) {
+  return addReaction(username, authorUsername, 'comment', postId, postActivityId, notifyMaker);
 };
 
 var getTimelineFeed = function getTimelineFeed(username) {

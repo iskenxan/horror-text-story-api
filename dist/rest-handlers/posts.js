@@ -123,9 +123,8 @@ posts.post('/add-comment', function (req, res, next) {
     var rankedFeedItem = (0, _formatter.getRankFeedItem)(published, authorUsername, id);
     rankedFeedItem.commentCount += 1;
     (0, _rankingFeed.addNewCommentToPostRank)(rankedFeedItem);
-    if (authorUsername !== username) {
-      return (0, _stream.addCommentNotification)(username, authorUsername, id, published.postActivityId);
-    }
+    var notifyMaker = authorUsername !== username;
+    return (0, _stream.addCommentNotification)(username, authorUsername, id, published.postActivityId, notifyMaker);
   }).then(function () {
     res.locals.result = resultComment;
     next();
