@@ -30,7 +30,7 @@ const getPost = (posts, postId) => {
 const addPostToRankingFeed = (rankedFeedItem) => {
   return getFeed()
     .then((feedItems) => {
-      if (Object.keys(feedItems).length >= 50) return;
+      if (Object.keys(feedItems).length >= 60) return;
       feedItems[rankedFeedItem.id] = rankedFeedItem;
       return updateFeed(feedItems);
     });
