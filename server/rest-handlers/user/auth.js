@@ -7,6 +7,9 @@ import {
   InvalidArgumentError,
   ResourceNotFound,
 } from '../../utils/errors';
+import {
+  alphaNumeric
+} from '../../utils/formatter'
 
 
 const router = express.Router();
@@ -52,6 +55,11 @@ router.post('/signup', (req, res, next) => {
   if (!username || !password || !repeatPassword) {
     throw new InvalidArgumentError('username, password and repeat password cannot be empty');
   }
+
+  if (!alphaNumeric(username) || !alphaNumeric(password)) {
+    throw new InvalidArgumentError('Username and password can only contain letters and numbers. No spaces');
+  }
+
   if (password !== repeatPassword) {
     throw new InvalidArgumentError('Passwords don\'t match');
   }

@@ -10,4 +10,11 @@ const getRankFeedItem = (postData, author, id) => {
   };
 };
 
-module.exports = { getRankFeedItem };
+
+const alphaNumeric = (text) => {
+  const test = text.trim();
+  if (test === '') return false;
+  return !(new RegExp(/[^a-zA-Z0-9]/).test(text));
+};
+
+module.exports = { getRankFeedItem, alphaNumeric };
