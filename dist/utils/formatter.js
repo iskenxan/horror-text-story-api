@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var getRankFeedItem = function getRankFeedItem(postData, author, id) {
   var favorite = postData.favorite,
@@ -14,5 +14,11 @@ var getRankFeedItem = function getRankFeedItem(postData, author, id) {
   };
 };
 
-module.exports = { getRankFeedItem: getRankFeedItem };
+var alphaNumeric = function alphaNumeric(text) {
+  var test = text.trim();
+  if (test === '') return false;
+  return !new RegExp(/[^a-zA-Z0-9]/).test(text);
+};
+
+module.exports = { getRankFeedItem: getRankFeedItem, alphaNumeric: alphaNumeric };
 //# sourceMappingURL=formatter.js.map

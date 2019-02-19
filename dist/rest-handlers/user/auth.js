@@ -18,6 +18,8 @@ var _user2 = _interopRequireDefault(_user);
 
 var _errors = require('../../utils/errors');
 
+var _formatter = require('../../utils/formatter');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var router = _express2.default.Router();
@@ -69,6 +71,11 @@ router.post('/signup', function (req, res, next) {
   if (!username || !password || !repeatPassword) {
     throw new _errors.InvalidArgumentError('username, password and repeat password cannot be empty');
   }
+
+  if (!(0, _formatter.alphaNumeric)(username) || !(0, _formatter.alphaNumeric)(password)) {
+    throw new _errors.InvalidArgumentError('Username and password can only contain letters and numbers. No spaces');
+  }
+
   if (password !== repeatPassword) {
     throw new _errors.InvalidArgumentError('Passwords don\'t match');
   }
