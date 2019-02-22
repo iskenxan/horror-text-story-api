@@ -98,6 +98,8 @@ const compressAndSaveImage = (data, username) => {
 const verifyTokenAndSave = (res, next, fileData, token) => {
   verifyToken(token)
     .then((username) => {
+      res.locals.result = `https://firebasestorage.googleapis.com/v0/b/travelguide-bf6df.appspot.com/o/${username}.jpg?alt=media`;
+      next();
       return compressAndSaveImage(fileData, username);
     });
 };
@@ -125,7 +127,6 @@ router.post('/profile-image/save', busboyMiddleWare(), (req, res, next) => {
     if (!fileData) next(new InvalidArgumentError('file binary data cannot be null'));
     if (!token) next(new InvalidArgumentError('No security token was passed'));
     verifyTokenAndSave(res, next, fileData, token);
-    next();
   });
 });
 
