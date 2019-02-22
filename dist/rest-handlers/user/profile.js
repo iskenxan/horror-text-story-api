@@ -119,11 +119,6 @@ var compressAndSaveImage = function compressAndSaveImage(data, username) {
 var verifyTokenAndSave = function verifyTokenAndSave(res, next, fileData, token) {
   (0, _encrypt.verifyToken)(token).then(function (username) {
     return compressAndSaveImage(fileData, username);
-  }).then(function (profileUrl) {
-    res.locals.result = profileUrl;
-    next();
-  }).catch(function (error) {
-    return next(error);
   });
 };
 
@@ -149,6 +144,7 @@ router.post('/profile-image/save', busboyMiddleWare(), function (req, res, next)
     if (!fileData) next(new _errors.InvalidArgumentError('file binary data cannot be null'));
     if (!token) next(new _errors.InvalidArgumentError('No security token was passed'));
     verifyTokenAndSave(res, next, fileData, token);
+    next();
   });
 });
 

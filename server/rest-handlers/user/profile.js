@@ -99,12 +99,7 @@ const verifyTokenAndSave = (res, next, fileData, token) => {
   verifyToken(token)
     .then((username) => {
       return compressAndSaveImage(fileData, username);
-    })
-    .then((profileUrl) => {
-      res.locals.result = profileUrl;
-      next();
-    })
-    .catch(error => next(error));
+    });
 };
 
 
@@ -130,6 +125,7 @@ router.post('/profile-image/save', busboyMiddleWare(), (req, res, next) => {
     if (!fileData) next(new InvalidArgumentError('file binary data cannot be null'));
     if (!token) next(new InvalidArgumentError('No security token was passed'));
     verifyTokenAndSave(res, next, fileData, token);
+    next();
   });
 });
 
