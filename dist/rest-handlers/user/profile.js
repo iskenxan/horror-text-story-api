@@ -118,6 +118,8 @@ var compressAndSaveImage = function compressAndSaveImage(data, username) {
 
 var verifyTokenAndSave = function verifyTokenAndSave(res, next, fileData, token) {
   (0, _encrypt.verifyToken)(token).then(function (username) {
+    res.locals.result = 'https://firebasestorage.googleapis.com/v0/b/travelguide-bf6df.appspot.com/o/' + username + '.jpg?alt=media';
+    next();
     return compressAndSaveImage(fileData, username);
   });
 };
@@ -144,7 +146,6 @@ router.post('/profile-image/save', busboyMiddleWare(), function (req, res, next)
     if (!fileData) next(new _errors.InvalidArgumentError('file binary data cannot be null'));
     if (!token) next(new _errors.InvalidArgumentError('No security token was passed'));
     verifyTokenAndSave(res, next, fileData, token);
-    next();
   });
 });
 
