@@ -64,13 +64,16 @@ router.post('/login', function (req, res, next) {
 
 router.post('/signup', function (req, res, next) {
   var _req$body2 = req.body,
-      username = _req$body2.username,
       password = _req$body2.password,
       repeatPassword = _req$body2.repeatPassword;
+  var username = req.body.username;
+
 
   if (!username || !password || !repeatPassword) {
     throw new _errors.InvalidArgumentError('username, password and repeat password cannot be empty');
   }
+
+  username = username.toLowerCase();
 
   if (!(0, _formatter.alphaNumeric)(username) || !(0, _formatter.alphaNumeric)(password)) {
     throw new _errors.InvalidArgumentError('Username and password can only contain letters and numbers. No spaces');
@@ -79,6 +82,7 @@ router.post('/signup', function (req, res, next) {
   if (password !== repeatPassword) {
     throw new _errors.InvalidArgumentError('Passwords don\'t match');
   }
+
   _user2.default.findUserByUsername(username).then(function (doc) {
     if (doc.exists) {
       throw new _errors.InvalidArgumentError('Username is taken');
