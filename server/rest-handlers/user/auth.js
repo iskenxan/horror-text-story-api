@@ -8,8 +8,8 @@ import {
   ResourceNotFound,
 } from '../../utils/errors';
 import {
-  alphaNumeric
-} from '../../utils/formatter'
+  alphaNumeric,
+} from '../../utils/formatter';
 
 
 const router = express.Router();
@@ -51,10 +51,14 @@ router.post('/login', (req, res, next) => {
 
 
 router.post('/signup', (req, res, next) => {
-  const { username, password, repeatPassword } = req.body;
+  const { password, repeatPassword } = req.body;
+  let { username } = req.body;
+
   if (!username || !password || !repeatPassword) {
     throw new InvalidArgumentError('username, password and repeat password cannot be empty');
   }
+
+  username = username.toLowerCase();
 
   if (!alphaNumeric(username) || !alphaNumeric(password)) {
     throw new InvalidArgumentError('Username and password can only contain letters and numbers. No spaces');
@@ -63,6 +67,7 @@ router.post('/signup', (req, res, next) => {
   if (password !== repeatPassword) {
     throw new InvalidArgumentError('Passwords don\'t match');
   }
+
   User.findUserByUsername(username).then((doc) => {
     if (doc.exists) {
       throw new InvalidArgumentError('Username is taken');
