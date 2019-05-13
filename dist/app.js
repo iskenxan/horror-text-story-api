@@ -28,6 +28,8 @@ var _encrypt = require('./encrypt');
 
 var _errors = require('./utils/errors');
 
+var _reddit = require('./scripts/reddit');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var NON_SECURE_PATHS = ['/user/auth', '/user/profile/profile-image/save'];

@@ -26,7 +26,7 @@ var searchForUsers = function searchForUsers(queryItem) {
 };
 
 var searchSuggested = function searchSuggested() {
-  return _index.db.collection('users').limit(20).get().then(function (snapshot) {
+  return _index.db.collection('users').limit(50).get().then(function (snapshot) {
     var result = {};
     snapshot.forEach(function (doc) {
       var userData = doc.data();

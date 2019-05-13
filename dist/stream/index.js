@@ -1,78 +1,74 @@
+'use strict';
 
+var _getstream = require('getstream');
 
-const _getstream = require('getstream');
-
-const _getstream2 = _interopRequireDefault(_getstream);
+var _getstream2 = _interopRequireDefault(_getstream);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const _process$env = process.env;
+var _process$env = process.env,
+    STREAM_KEY = _process$env.STREAM_KEY,
+    STREAM_SECRET = _process$env.STREAM_SECRET;
 
+var client = _getstream2.default.connect(STREAM_KEY, STREAM_SECRET, '46620', { location: 'us-east' });
 
-const STREAM_KEY = _process$env.STREAM_KEY;
-
-
-const STREAM_SECRET = _process$env.STREAM_SECRET;
-
-const client = _getstream2.default.connect(STREAM_KEY, STREAM_SECRET, '46620', { location: 'us-east' });
-
-const addPostActivity = function addPostActivity(username, postId, postTitle, timestamp) {
-  const userFeed = client.feed('user', username);
+var addPostActivity = function addPostActivity(username, postId, postTitle, timestamp) {
+  var userFeed = client.feed('user', username);
   return userFeed.addActivity({
     actor: username,
     verb: 'post',
     object: postId,
-    foreign_id: `post:${postId}`,
-    postTitle,
-    timestamp,
+    foreign_id: 'post:' + postId,
+    postTitle: postTitle,
+    timestamp: timestamp
   });
 };
 
-const removePostActivity = function removePostActivity(username, postId) {
-  const userFeed = client.feed('user', username);
-  return userFeed.removeActivity({ foreignId: `post:${postId}` });
+var removePostActivity = function removePostActivity(username, postId) {
+  var userFeed = client.feed('user', username);
+  return userFeed.removeActivity({ foreignId: 'post:' + postId });
 };
 
-const followUser = function followUser(username, following) {
-  const timelineFeed = client.feed('timeline', username);
+var followUser = function followUser(username, following) {
+  var timelineFeed = client.feed('timeline', username);
   timelineFeed.follow('user', following);
 };
 
-const unfollowUser = function unfollowUser(username, following) {
-  const timelinefeed = client.feed('timeline', username);
+var unfollowUser = function unfollowUser(username, following) {
+  var timelinefeed = client.feed('timeline', username);
   timelinefeed.unfollow('user', following);
 };
 
-const addNotification = function addNotification(username, actor, verb, foreignId, object) {
-  const notificationFeed = client.feed('notifications', username);
+var addNotification = function addNotification(username, actor, verb, foreignId, object) {
+  var notificationFeed = client.feed('notifications', username);
   return notificationFeed.addActivity({
-    actor,
-    verb,
-    object,
+    actor: actor,
+    verb: verb,
+    object: object,
     foreign_id: foreignId,
-    timestamp: new Date().getTime(),
+    timestamp: new Date().getTime()
   });
 };
 
-const addFollowerNotification = function addFollowerNotification(username, followerUsername) {
-  const foreignId = `${followerUsername}-follow-${username}`;
+var addFollowerNotification = function addFollowerNotification(username, followerUsername) {
+  var foreignId = followerUsername + '-follow-' + username;
   return addNotification(username, followerUsername, 'follow', foreignId, foreignId);
 };
 
-const getUserClient = function getUserClient(username) {
-  const userToken = client.createUserToken(username);
+var getUserClient = function getUserClient(username) {
+  var userToken = client.createUserToken(username);
   return _getstream2.default.connect(STREAM_KEY, userToken, '46620');
 };
 
-const addReaction = function addReaction(username, authorUsername, type, postId, postActivityId) {
-  const notifyMaker = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+var addReaction = function addReaction(username, authorUsername, type, postId, postActivityId) {
+  var notifyMaker = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
 
-  const userClient = getUserClient(username);
+  var userClient = getUserClient(username);
 
   return userClient.reactions.add(type, postActivityId, {
     actor: username,
-    timestamp: new Date().getTime(),
-  }).then((reactionResult) => {
+    timestamp: new Date().getTime()
+  }).then(function (reactionResult) {
     if (notifyMaker) {
       addNotification(authorUsername, username, type, postId, postId);
     }
@@ -80,58 +76,56 @@ const addReaction = function addReaction(username, authorUsername, type, postId,
   });
 };
 
-const removeFavoriteNotification = function removeFavoriteNotification(username, reactionId) {
-  return client.reactions.delete(reactionId, (secondResult) => {
+var removeFavoriteNotification = function removeFavoriteNotification(username, reactionId) {
+  return client.reactions.delete(reactionId, function (secondResult) {
     console.log(secondResult);
   });
 };
 
-const addFavoriteNotification = function addFavoriteNotification(username,
-  authorUsername, postId, postActivityId) {
+var addFavoriteNotification = function addFavoriteNotification(username, authorUsername, postId, postActivityId) {
   return addReaction(username, authorUsername, 'like', postId, postActivityId);
 };
 
-const addCommentNotification = function addCommentNotification(username, authorUsername,
-  postId, postActivityId, notifyMaker) {
+var addCommentNotification = function addCommentNotification(username, authorUsername, postId, postActivityId, notifyMaker) {
   return addReaction(username, authorUsername, 'comment', postId, postActivityId, notifyMaker);
 };
 
-const getTimelineFeed = function getTimelineFeed(username) {
-  const timeLineFeed = client.feed('timeline', username);
+var getTimelineFeed = function getTimelineFeed(username) {
+  var timeLineFeed = client.feed('timeline', username);
   return timeLineFeed.get({
     limit: 25,
     enrich: true,
     reactions: {
-      counts: true,
-    },
-  }).then((result) => {
+      counts: true
+    }
+  }).then(function (result) {
     return result;
   });
 };
 
-const removePostNotifications = function removePostNotifications(author, postId) {
-  const notificationFeed = client.feed('notifications', author);
+var removePostNotifications = function removePostNotifications(author, postId) {
+  var notificationFeed = client.feed('notifications', author);
   return notificationFeed.removeActivity({ foreignId: postId });
 };
 
-const getNotificationFeed = function getNotificationFeed(username) {
-  const notificationFeed = client.feed('notifications', username);
-  return notificationFeed.get({ limit: 100, mark_seen: true }).then((result) => {
+var getNotificationFeed = function getNotificationFeed(username) {
+  var notificationFeed = client.feed('notifications', username);
+  return notificationFeed.get({ limit: 100, mark_seen: true }).then(function (result) {
     return result;
   });
 };
 
 module.exports = {
-  addPostActivity,
-  removePostActivity,
-  addFollowerNotification,
-  addFavoriteNotification,
-  addCommentNotification,
-  followUser,
-  unfollowUser,
-  getTimelineFeed,
-  getNotificationFeed,
-  removeFavoriteNotification,
-  removePostNotifications,
+  addPostActivity: addPostActivity,
+  removePostActivity: removePostActivity,
+  addFollowerNotification: addFollowerNotification,
+  addFavoriteNotification: addFavoriteNotification,
+  addCommentNotification: addCommentNotification,
+  followUser: followUser,
+  unfollowUser: unfollowUser,
+  getTimelineFeed: getTimelineFeed,
+  getNotificationFeed: getNotificationFeed,
+  removeFavoriteNotification: removeFavoriteNotification,
+  removePostNotifications: removePostNotifications
 };
-// # sourceMappingURL=index.js.map
+//# sourceMappingURL=index.js.map

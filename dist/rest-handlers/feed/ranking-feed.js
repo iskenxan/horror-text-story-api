@@ -35,7 +35,7 @@ var getPost = function getPost(posts, postId) {
 
 var addPostToRankingFeed = function addPostToRankingFeed(rankedFeedItem) {
   return getFeed().then(function (feedItems) {
-    if (Object.keys(feedItems).length >= 60) return;
+    if (Object.keys(feedItems).length >= 300) return;
     feedItems[rankedFeedItem.id] = rankedFeedItem;
     return updateFeed(feedItems);
   });
