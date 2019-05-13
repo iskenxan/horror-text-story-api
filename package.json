@@ -18,6 +18,7 @@
     "deploy-heroku": "npm run build && git push heroku"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "babel-eslint": "^10.0.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
@@ -27,6 +28,7 @@
     "getstream": "^4.1.0",
     "jsonwebtoken": "^8.3.0",
     "lodash": "^4.17.11",
+    "qs": "^6.6.0",
     "sharp": "^0.21.0"
   },
   "devDependencies": {

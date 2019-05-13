@@ -25,7 +25,7 @@ const searchForUsers = (queryItem) => {
 
 
 const searchSuggested = () => {
-  return db.collection('users').limit(20).get().then((snapshot) => {
+  return db.collection('users').limit(50).get().then((snapshot) => {
     const result = {};
     snapshot.forEach((doc) => {
       const userData = doc.data();
