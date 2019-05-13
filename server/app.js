@@ -6,8 +6,6 @@ import posts from './rest-handlers/posts';
 import feed from './rest-handlers/feed';
 import { verifyToken } from './encrypt';
 import { AuthenticationError } from './utils/errors';
-import { trySendMessage } from './scripts/reddit';
-
 
 const NON_SECURE_PATHS = ['/user/auth', '/user/profile/profile-image/save'];
 

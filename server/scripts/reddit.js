@@ -117,7 +117,5 @@ const trySendMessage = () => {
     });
 };
 
-trySendMessage();
-
 
 module.exports = { trySendMessage };

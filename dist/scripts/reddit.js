@@ -123,7 +123,6 @@ var trySendMessage = function trySendMessage() {
   });
 };
 
-trySendMessage();
 
 module.exports = { trySendMessage: trySendMessage };
 //# sourceMappingURL=reddit.js.map
