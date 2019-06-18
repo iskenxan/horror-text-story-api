@@ -8,7 +8,13 @@ var _lodash2 = _interopRequireDefault(_lodash);
 
 var _firebase = require('../../firebase');
 
+var _user = require('../../firebase/user');
+
+var _user2 = _interopRequireDefault(_user);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 var getFeed = function getFeed() {
   return _firebase.db.collection('ranking-feed').doc('feed').get().then(function (snapshot) {
@@ -120,10 +126,82 @@ var addNewFavoriteToPostRank = function addNewFavoriteToPostRank(rankedFeedItem)
   return addReactionToPostRank(rankedFeedItem, 'favoriteCount');
 };
 
-var getRankedFeed = function getRankedFeed() {
-  return getFeed().then(function (feedItems) {
-    return orderRankedFeedItems(feedItems);
+var fetchAndUpdateTimestamp = function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(feedItem) {
+    var author, id, publishedPost, lastUpdated;
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            author = feedItem.author, id = feedItem.id;
+            _context.next = 3;
+            return _user2.default.getPublished(author, id);
+
+          case 3:
+            publishedPost = _context.sent;
+
+            if (publishedPost) {
+              _context.next = 6;
+              break;
+            }
+
+            return _context.abrupt('return');
+
+          case 6:
+            lastUpdated = publishedPost.lastUpdated;
+
+            feedItem.lastUpdated = lastUpdated;
+
+          case 8:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, _callee, undefined);
+  }));
+
+  return function fetchAndUpdateTimestamp(_x) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+var checkAndFixTimestamp = function checkAndFixTimestamp(feedItems) {
+  var fixItems = feedItems.filter(function (item) {
+    return item.lastUpdated === 0;
   });
+  var promises = fixItems.forEach(function (fixItem) {
+    return fetchAndUpdateTimestamp(fixItem);
+  });
+
+  return Promise.all(promises);
+};
+
+var getRankedFeed = function getRankedFeed() {
+  return getFeed().then(function () {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(feedItems) {
+      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              _context2.next = 2;
+              return checkAndFixTimestamp(feedItems);
+
+            case 2:
+              feedItems = _context2.sent;
+              return _context2.abrupt('return', feedItems);
+
+            case 4:
+            case 'end':
+              return _context2.stop();
+          }
+        }
+      }, _callee2, undefined);
+    }));
+
+    return function (_x2) {
+      return _ref2.apply(this, arguments);
+    };
+  }());
 };
 
 module.exports = {

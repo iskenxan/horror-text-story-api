@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { db } from '../../firebase';
-
+import User from '../../firebase/user';
 
 const getFeed = () => {
   return db.collection('ranking-feed').doc('feed').get()
@@ -122,9 +122,40 @@ const addNewFavoriteToPostRank = (rankedFeedItem) => {
 };
 
 
+const fetchAndUpdateTimestamp = (feedItem) => {
+  const {
+    author,
+    id,
+  } = feedItem;
+
+  return User.getPublished(author, id).then((doc) => {
+    if (!doc.exists) return;
+    const { lastUpdated } = doc.data();
+    feedItem.lastUpdated = lastUpdated;
+
+    return feedItem;
+  });
+};
+
+
+const checkAndFixTimestamp = (feedItems) => {
+  const fixItems = _.filter(feedItems, item => item.lastUpdated === 0);
+  const promises = fixItems.map(fixItem => fetchAndUpdateTimestamp(fixItem));
+  if (fixItems.length <= 0) return Promise.resolve();
+  return Promise.all(promises).then(() => {
+    return updateFeed(feedItems);
+  });
+};
+
+
 const getRankedFeed = () => {
+  let feedItems;
   return getFeed()
-    .then((feedItems) => {
+    .then((items) => {
+      feedItems = items;
+      return checkAndFixTimestamp(feedItems);
+    })
+    .then(() => {
       return orderRankedFeedItems(feedItems);
     });
 };

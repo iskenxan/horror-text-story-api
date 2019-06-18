@@ -6,7 +6,7 @@ import {
 } from '../../utils/errors';
 import { addPostActivity, removePostActivity, removePostNotifications } from '../../stream';
 import { addPostToRankingFeed, removePostFromRankingFeed } from '../feed/ranking-feed';
-import { getRankFeedItem } from '../../utils/formatter'
+import { getRankFeedItem } from '../../utils/formatter';
 
 
 const router = express.Router();
