@@ -6,6 +6,7 @@ import posts from './rest-handlers/posts';
 import feed from './rest-handlers/feed';
 import { verifyToken } from './encrypt';
 import { AuthenticationError } from './utils/errors';
+import { startListeningToNotifications } from './stream/notification-listener';
 
 const NON_SECURE_PATHS = ['/user/auth', '/user/profile/profile-image/save'];
 
@@ -86,6 +87,10 @@ app.use(errorHandling);
 
 
 const port = process.env.PORT || 3001;
+
+
+startListeningToNotifications();
+
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);

@@ -24,6 +24,8 @@ var _file = require('../../utils/file');
 
 var _stream = require('../../stream');
 
+var _notificationListener = require('../../stream/notification-listener');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var router = _express2.default.Router();
@@ -96,6 +98,20 @@ router.post('/unfollow', function (req, res, next) {
     });
     res.locals.result = user;
     return next();
+  });
+});
+
+router.post('/notification-token/set', function (req, res, next) {
+  var username = res.locals.username;
+  var notificationToken = req.body.notif_token;
+
+  if (!notificationToken) throw new _errors.InvalidArgumentError('notif_token cannot be null');
+
+  _user2.default.setNotificationToken(username, notificationToken).then(function () {
+    (0, _notificationListener.subscribeNotificationListener)(username, notificationToken);
+    res.status(204).send();
+  }).catch(function (error) {
+    return next(error);
   });
 });
 

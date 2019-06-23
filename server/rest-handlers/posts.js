@@ -47,7 +47,7 @@ posts.post('/add-favorite', (req, res, next) => {
       return User.addToFavorite(authorUsername, id, postTitle, username);
     })
     .then(() => {
-      return addFavoriteNotification(username, authorUsername, id, published.postActivityId);
+      return addFavoriteNotification(username, authorUsername, id, published.postActivityId, true);
     })
     .then((result) => {
       const { id: reactionId } = result;

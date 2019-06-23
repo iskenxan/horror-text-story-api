@@ -7,6 +7,7 @@ const getRankFeedItem = (postData, author, id) => {
     commentCount: comments ? comments.length : 0,
     lastUpdated: postData.lastUpdated,
     title: postData.title,
+    preface: postData.preface,
   };
 };
 

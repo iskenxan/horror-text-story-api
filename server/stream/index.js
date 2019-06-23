@@ -4,7 +4,7 @@ const { STREAM_KEY, STREAM_SECRET } = process.env;
 const client = stream.connect(STREAM_KEY, STREAM_SECRET, '46620', { location: 'us-east' });
 
 
-const addPostActivity = (username, postId, postTitle, timestamp) => {
+const addPostActivity = (username, postId, postTitle, timestamp, postPreface) => {
   const userFeed = client.feed('user', username);
   return userFeed.addActivity({
     actor: username,
@@ -12,6 +12,7 @@ const addPostActivity = (username, postId, postTitle, timestamp) => {
     object: postId,
     foreign_id: `post:${postId}`,
     postTitle,
+    postPreface,
     timestamp,
   });
 };
@@ -81,8 +82,8 @@ const removeFavoriteNotification = (username, reactionId) => {
   });
 };
 
-const addFavoriteNotification = (username, authorUsername, postId, postActivityId) => {
-  return addReaction(username, authorUsername, 'like', postId, postActivityId);
+const addFavoriteNotification = (username, authorUsername, postId, postActivityId, notifyMaker) => {
+  return addReaction(username, authorUsername, 'like', postId, postActivityId, notifyMaker);
 };
 
 
@@ -113,9 +114,16 @@ const removePostNotifications = (author, postId) => {
 
 const getNotificationFeed = (username) => {
   const notificationFeed = client.feed('notifications', username);
-  return notificationFeed.get({ limit: 100, mark_seen: true }).then((result) => {
+  return notificationFeed.get({ limit: 200, mark_seen: true }).then((result) => {
     return result;
   });
+};
+
+
+const subscribeToNotification = (username, callback) => {
+  const notificationFeed = client.feed('notifications', username);
+
+  return notificationFeed.subscribe(callback);
 };
 
 
@@ -131,4 +139,5 @@ module.exports = {
   getNotificationFeed,
   removeFavoriteNotification,
   removePostNotifications,
+  subscribeToNotification,
 };

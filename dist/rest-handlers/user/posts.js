@@ -58,12 +58,12 @@ router.post('/draft/publish', function (req, res, next) {
     published = result;
     var rankedFeedItem = (0, _formatter.getRankFeedItem)(published, username, published.id);
     (0, _rankingFeed.addPostToRankingFeed)(rankedFeedItem);
-    return (0, _stream.addPostActivity)(username, published.id, published.title, published.lastUpdated);
+    return (0, _stream.addPostActivity)(username, published.id, published.title, published.lastUpdated, published.preface);
   }).then(function (result) {
     var activityId = result.id;
 
     _user2.default.updatePublished(username, published.id, 'postActivityId', activityId);
-    res.locals.result = _extends({}, published, { postActivityId: activityId });
+    res.locals.result = _extends({}, published, { author: username, postActivityId: activityId });
     next();
   }).catch(function (error) {
     return next(error);

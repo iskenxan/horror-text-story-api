@@ -10,7 +10,8 @@ var getRankFeedItem = function getRankFeedItem(postData, author, id) {
     favoriteCount: favorite ? Object.keys(favorite).length : 0,
     commentCount: comments ? comments.length : 0,
     lastUpdated: postData.lastUpdated,
-    title: postData.title
+    title: postData.title,
+    preface: postData.preface
   };
 };
 

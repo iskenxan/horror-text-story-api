@@ -14,7 +14,6 @@ class User {
     this.following = [];
   }
 
-
   writeToDb = () => {
     return User.findUserByUsername(this.username).then((doc) => {
       if (doc.exists) {
@@ -30,6 +29,14 @@ class User {
       });
     });
   };
+
+
+  static setNotificationToken = (username, notificationToken) => {
+    return db.collection('users').doc(username)
+      .update({
+        notificationToken,
+      });
+  }
 
 
   static removeFromFavorite = (authorUsername, postId, username) => {
@@ -268,6 +275,7 @@ class User {
     const ref = db.collection('users').doc(username).collection(collection).doc();
     const { id } = ref;
     return ref.set({
+      preface: post.preface,
       title: post.title,
       characters: post.characters,
       dialog: post.dialog,

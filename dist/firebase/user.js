@@ -45,6 +45,12 @@ var User = function () {
   return User;
 }();
 
+User.setNotificationToken = function (username, notificationToken) {
+  return _index.db.collection('users').doc(username).update({
+    notificationToken: notificationToken
+  });
+};
+
 User.removeFromFavorite = function (authorUsername, postId, username) {
   var FieldValue = _firebaseAdmin2.default.firestore.FieldValue;
 
@@ -219,6 +225,7 @@ User._saveInCollection = function (username, post, collection, lastUpdated) {
   var id = ref.id;
 
   return ref.set({
+    preface: post.preface,
     title: post.title,
     characters: post.characters,
     dialog: post.dialog,

@@ -60,7 +60,7 @@ posts.post('/add-favorite', function (req, res, next) {
     published = doc.data();
     return _user2.default.addToFavorite(authorUsername, id, postTitle, username);
   }).then(function () {
-    return (0, _stream.addFavoriteNotification)(username, authorUsername, id, published.postActivityId);
+    return (0, _stream.addFavoriteNotification)(username, authorUsername, id, published.postActivityId, true);
   }).then(function (result) {
     var reactionId = result.id;
 

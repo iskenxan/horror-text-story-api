@@ -26,7 +26,7 @@ var searchForUsers = function searchForUsers(queryItem) {
 };
 
 var searchSuggested = function searchSuggested() {
-  return _index.db.collection('users').limit(50).get().then(function (snapshot) {
+  return _index.db.collection('users').limit(60).get().then(function (snapshot) {
     var result = {};
     snapshot.forEach(function (doc) {
       var userData = doc.data();
@@ -39,5 +39,18 @@ var searchSuggested = function searchSuggested() {
   });
 };
 
-module.exports = { searchForUsers: searchForUsers, searchSuggested: searchSuggested };
+var getUsersWithNotificationToken = function getUsersWithNotificationToken() {
+  return _index.db.collection('users').where('notificationToken', '>', '').get().then(function (snapshot) {
+    var result = {};
+    snapshot.forEach(function (doc) {
+      var userData = doc.data();
+      delete userData.hashedPassword;
+
+      result[userData.username] = userData;
+    });
+    return result;
+  });
+};
+
+module.exports = { searchForUsers: searchForUsers, searchSuggested: searchSuggested, getUsersWithNotificationToken: getUsersWithNotificationToken };
 //# sourceMappingURL=search.js.map

@@ -28,6 +28,8 @@ var _encrypt = require('./encrypt');
 
 var _errors = require('./utils/errors');
 
+var _notificationListener = require('./stream/notification-listener');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var NON_SECURE_PATHS = ['/user/auth', '/user/profile/profile-image/save'];
@@ -104,6 +106,8 @@ var errorHandling = function errorHandling(err, req, res, next) {
 app.use(errorHandling);
 
 var port = process.env.PORT || 3001;
+
+(0, _notificationListener.startListeningToNotifications)();
 
 app.listen(port, function () {
   console.log('Listening on port ' + port);

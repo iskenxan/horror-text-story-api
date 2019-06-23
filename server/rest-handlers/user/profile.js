@@ -10,10 +10,18 @@ import {
 import {
   compressImage,
 } from '../../utils/file';
-import { addFollowerNotification, followUser, unfollowUser } from '../../stream';
+import {
+  addFollowerNotification,
+  followUser,
+  unfollowUser,
+} from '../../stream';
+import {
+  subscribeNotificationListener,
+} from '../../stream/notification-listener';
 
 
 const router = express.Router();
+
 
 router.post('/other', (req, res, next) => {
   const { username } = req.body;
@@ -78,6 +86,20 @@ router.post('/unfollow', (req, res, next) => {
 });
 
 
+router.post('/notification-token/set', (req, res, next) => {
+  const { username } = res.locals;
+  const { notif_token: notificationToken } = req.body;
+  if (!notificationToken) throw new InvalidArgumentError('notif_token cannot be null');
+
+  User.setNotificationToken(username, notificationToken)
+    .then(() => {
+      subscribeNotificationListener(username, notificationToken);
+      res.status(204).send();
+    })
+    .catch(error => next(error));
+});
+
+
 const busboyMiddleWare = () => busboy({
   limits: {
     fileSize: 10 * 1024 * 1024,
@@ -103,7 +125,6 @@ const verifyTokenAndSave = (res, next, fileData, token) => {
       return compressAndSaveImage(fileData, username);
     });
 };
-
 
 router.post('/profile-image/save', busboyMiddleWare(), (req, res, next) => {
   if (!req.busboy) throw new InvalidArgumentError('file binary data cannot be null');

@@ -45,12 +45,13 @@ router.post('/draft/publish', (req, res, next) => {
       published = result;
       const rankedFeedItem = getRankFeedItem(published, username, published.id);
       addPostToRankingFeed(rankedFeedItem);
-      return addPostActivity(username, published.id, published.title, published.lastUpdated);
+      return addPostActivity(username, published.id, published.title,
+        published.lastUpdated, published.preface);
     })
     .then((result) => {
       const { id: activityId } = result;
       User.updatePublished(username, published.id, 'postActivityId', activityId);
-      res.locals.result = { ...published, postActivityId: activityId };
+      res.locals.result = { ...published, author: username, postActivityId: activityId };
       next();
     })
     .catch(error => next(error));

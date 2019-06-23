@@ -19,6 +19,7 @@ var formatFeed = function formatFeed(results) {
       author: activity.actor,
       id: activity.object,
       title: activity.postTitle,
+      preface: activity.postPreface,
       lastUpdated: activity.timestamp,
       favoriteCount: activity.reaction_counts.like,
       commentCount: activity.reaction_counts.comment

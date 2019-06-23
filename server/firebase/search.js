@@ -25,7 +25,7 @@ const searchForUsers = (queryItem) => {
 
 
 const searchSuggested = () => {
-  return db.collection('users').limit(50).get().then((snapshot) => {
+  return db.collection('users').limit(60).get().then((snapshot) => {
     const result = {};
     snapshot.forEach((doc) => {
       const userData = doc.data();
@@ -39,4 +39,19 @@ const searchSuggested = () => {
 };
 
 
-module.exports = { searchForUsers, searchSuggested };
+const getUsersWithNotificationToken = () => {
+  return db.collection('users').where('notificationToken', '>', '').get()
+    .then((snapshot) => {
+      const result = {};
+      snapshot.forEach((doc) => {
+        const userData = doc.data();
+        delete userData.hashedPassword;
+
+        result[userData.username] = userData;
+      });
+      return result;
+    });
+};
+
+
+module.exports = { searchForUsers, searchSuggested, getUsersWithNotificationToken };

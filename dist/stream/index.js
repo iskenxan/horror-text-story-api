@@ -12,7 +12,7 @@ var _process$env = process.env,
 
 var client = _getstream2.default.connect(STREAM_KEY, STREAM_SECRET, '46620', { location: 'us-east' });
 
-var addPostActivity = function addPostActivity(username, postId, postTitle, timestamp) {
+var addPostActivity = function addPostActivity(username, postId, postTitle, timestamp, postPreface) {
   var userFeed = client.feed('user', username);
   return userFeed.addActivity({
     actor: username,
@@ -20,6 +20,7 @@ var addPostActivity = function addPostActivity(username, postId, postTitle, time
     object: postId,
     foreign_id: 'post:' + postId,
     postTitle: postTitle,
+    postPreface: postPreface,
     timestamp: timestamp
   });
 };
@@ -82,8 +83,8 @@ var removeFavoriteNotification = function removeFavoriteNotification(username, r
   });
 };
 
-var addFavoriteNotification = function addFavoriteNotification(username, authorUsername, postId, postActivityId) {
-  return addReaction(username, authorUsername, 'like', postId, postActivityId);
+var addFavoriteNotification = function addFavoriteNotification(username, authorUsername, postId, postActivityId, notifyMaker) {
+  return addReaction(username, authorUsername, 'like', postId, postActivityId, notifyMaker);
 };
 
 var addCommentNotification = function addCommentNotification(username, authorUsername, postId, postActivityId, notifyMaker) {
@@ -110,9 +111,15 @@ var removePostNotifications = function removePostNotifications(author, postId) {
 
 var getNotificationFeed = function getNotificationFeed(username) {
   var notificationFeed = client.feed('notifications', username);
-  return notificationFeed.get({ limit: 100, mark_seen: true }).then(function (result) {
+  return notificationFeed.get({ limit: 200, mark_seen: true }).then(function (result) {
     return result;
   });
+};
+
+var subscribeToNotification = function subscribeToNotification(username, callback) {
+  var notificationFeed = client.feed('notifications', username);
+
+  return notificationFeed.subscribe(callback);
 };
 
 module.exports = {
@@ -126,6 +133,7 @@ module.exports = {
   getTimelineFeed: getTimelineFeed,
   getNotificationFeed: getNotificationFeed,
   removeFavoriteNotification: removeFavoriteNotification,
-  removePostNotifications: removePostNotifications
+  removePostNotifications: removePostNotifications,
+  subscribeToNotification: subscribeToNotification
 };
 //# sourceMappingURL=index.js.map
