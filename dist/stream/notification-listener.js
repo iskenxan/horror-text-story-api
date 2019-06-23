@@ -6,6 +6,8 @@ var _index = require('./index');
 
 var _fcm = require('../firebase/fcm');
 
+var store = {};
+
 var ACTIONS = {
   follow: 'followed you!',
   like: 'liked your story!',
@@ -30,12 +32,15 @@ var getBodyAndTitle = function getBodyAndTitle(data) {
 };
 
 var subscribeNotificationListener = function subscribeNotificationListener(username, notificationToken) {
-  (0, _index.subscribeToNotification)(username, function (data) {
+  if (store[username]) return;
+
+  store[username] = function (data) {
     console.log({ data: data });
     var notifData = getBodyAndTitle(data.new);
-
     (0, _fcm.sendNotification)(notificationToken, notifData);
-  }).then(function () {
+  };
+
+  (0, _index.subscribeToNotification)(username, store[username]).then(function () {
     return console.log('listening to ' + username + ' notifs');
   }).catch(function (e) {
     return console.log({ error: e });

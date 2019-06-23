@@ -8,6 +8,9 @@ import {
   sendNotification,
 } from '../firebase/fcm';
 
+const store = {
+
+};
 
 const ACTIONS = {
   follow: 'followed you!',
@@ -33,12 +36,16 @@ const getBodyAndTitle = (data) => {
 
 
 const subscribeNotificationListener = (username, notificationToken) => {
-  subscribeToNotification(username, (data) => {
+  if (store[username]) return;
+
+
+  store[username] = (data) => {
     console.log({ data });
     const notifData = getBodyAndTitle(data.new);
-
     sendNotification(notificationToken, notifData);
-  })
+  };
+
+  subscribeToNotification(username, store[username])
     .then(() => console.log(`listening to ${username} notifs`))
     .catch(e => console.log({ error: e }));
 };
