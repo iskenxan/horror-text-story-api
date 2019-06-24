@@ -36,16 +36,23 @@ const getBodyAndTitle = (data) => {
 
 
 const subscribeNotificationListener = (username, notificationToken) => {
-  if (store[username]) return;
+  if (store[username]) {
+    store[username].notificationToken = notificationToken;
+    return;
+  }
 
 
-  store[username] = (data) => {
-    console.log({ data });
-    const notifData = getBodyAndTitle(data.new);
-    sendNotification(notificationToken, notifData);
+  store[username] = {
+    handler: (data) => {
+      const notifData = getBodyAndTitle(data.new);
+      const token = store[username].notificationToken;
+      console.log({ data, token });
+      sendNotification(token, notifData);
+    },
+    notificationToken,
   };
 
-  subscribeToNotification(username, store[username])
+  subscribeToNotification(username, store[username].handler)
     .then(() => console.log(`listening to ${username} notifs`))
     .catch(e => console.log({ error: e }));
 };

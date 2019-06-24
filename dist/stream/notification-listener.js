@@ -32,15 +32,22 @@ var getBodyAndTitle = function getBodyAndTitle(data) {
 };
 
 var subscribeNotificationListener = function subscribeNotificationListener(username, notificationToken) {
-  if (store[username]) return;
+  if (store[username]) {
+    store[username].notificationToken = notificationToken;
+    return;
+  }
 
-  store[username] = function (data) {
-    console.log({ data: data });
-    var notifData = getBodyAndTitle(data.new);
-    (0, _fcm.sendNotification)(notificationToken, notifData);
+  store[username] = {
+    handler: function handler(data) {
+      var notifData = getBodyAndTitle(data.new);
+      var token = store[username].notificationToken;
+      console.log({ data: data, token: token });
+      (0, _fcm.sendNotification)(token, notifData);
+    },
+    notificationToken: notificationToken
   };
 
-  (0, _index.subscribeToNotification)(username, store[username]).then(function () {
+  (0, _index.subscribeToNotification)(username, store[username].handler).then(function () {
     return console.log('listening to ' + username + ' notifs');
   }).catch(function (e) {
     return console.log({ error: e });
